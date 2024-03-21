@@ -1,0 +1,359 @@
+#include "ray.h"
+
+struct Ray {
+  glm::vec3 origin;
+  glm::vec3 direction;
+};
+
+struct Sphere {
+  glm::vec3 position;
+  float radius;
+};
+
+// Looking back, I wish I used glm::vec3 from the start
+struct Vec3 {
+  float x, y, z;
+};
+
+struct P {
+  glm::vec3 loc;
+  glm::vec3 diff;
+  glm::vec3 spec;
+  float shine;
+  glm::vec3 normal;
+  float distance;
+};
+
+using namespace std;
+
+extern float antialias;
+extern float backgroundx;
+extern float backgroundy;
+extern float backgroundz;
+extern int maxdepth;
+extern int resolutionX;
+extern int resolutionY;
+
+struct Light {
+  Vec3 pos;
+  Vec3 diff;
+  Vec3 spec;
+};
+
+extern vector<Light> lights;
+extern vector<tuple<Vec3, float, Vec3, Vec3, float>> spheres;
+extern vector<tuple<vector<Vec3>, Vec3, Vec3, float>> quads;
+
+const float PI = 3.14159265358979323846f;
+const float fov = 150.0f;
+const float f_inf = std::numeric_limits<float>::infinity();
+
+// Camera is so far to recreate a similar setup as on example pictures
+glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
+
+float reflection_loss = 1.0f;
+
+// Gramm-Schmidt orthonormalization
+void GrammSchmidt(glm::vec3 &l, glm::vec3 &v, glm::vec3 &u) {
+  l = glm::normalize(l);
+  v = glm::normalize(v - glm::dot(v, l) * l);
+  u = glm::cross(v, l);
+}
+
+// Get ray from x,y pixel and setup the scene vectors
+Ray CalculateRay(int x, int y) {
+  glm::vec3 lookAt(0.0f, 0.0f, 0.0f); // Look at point
+  glm::vec3 up(0.0f, 1.0f, 0.0f);     // Up vector
+
+  float aspectRatio = float(width) / float(height);
+  float focalLength = 1.0f / tan((fov * PI / 180.0f) / 2.0f);
+
+  // Calculate l, v, u vectors
+  glm::vec3 l = lookAt - camera_pos;
+  glm::vec3 v = up;
+  glm::vec3 u;
+  GrammSchmidt(l, v, u);
+
+  // Calculate ray direction
+  float px =
+      (2.0f * (x + 0.5f) / float(width) - 1.0f) * aspectRatio * focalLength;
+  float py = (1.0f - 2.0f * (y + 0.5f) / float(height)) * focalLength;
+  glm::vec3 p = camera_pos + l + px * u + py * v;
+  glm::vec3 direction = glm::normalize(p - camera_pos);
+
+  return Ray{camera_pos, direction};
+}
+
+// Function to check ray-sphere intersection
+// Using method from the slides
+float ray_intersects_sphere(Ray ray, const Vec3 &pos, float radius) {
+  // Calculate the vector from center of the sphere to the ray origin
+  glm::vec3 sph_to_ray = glm::vec3(ray.origin.x - pos.x, ray.origin.y - pos.y,
+                                   ray.origin.z - pos.z);
+
+  // Setup quadratic equation
+  float a = glm::dot(ray.direction, ray.direction);
+  float b = 2.0f * glm::dot(sph_to_ray, ray.direction);
+  float c = glm::dot(sph_to_ray, sph_to_ray) - radius * radius;
+
+  // Calculate the discriminant
+  float discriminant = b * b - 4 * a * c;
+
+  // If discriminant is non-negative, the ray intersects the sphere
+  if (discriminant >= 0) {
+    float delta = std::sqrt(discriminant);
+
+    // Calculate the distances to intersection points
+    float t1 = (-b - delta) / (2.0f * a);
+    float t2 = (-b + delta) / (2.0f * a);
+
+    // Return correct distance
+    if (t1 > 0 && t2 > 0) {
+      return std::min(t1, t2);
+    } else if (t1 > 0) {
+      return t1;
+    } else if (t2 > 0) {
+      return t2;
+    }
+  }
+
+  // -1 indicating no intersection
+  return -1.0f;
+}
+
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+// Function to check ray-triangle intersection
+// I took it as-is since it was linked in the class slides (Raytracing slide 47)
+float ray_intersects_triangle(glm::vec3 ray_origin, glm::vec3 ray_vector,
+                              const std::vector<Vec3> &triangle_vertices,
+                              glm::vec3 &out_intersection_point) {
+  constexpr float epsilon = std::numeric_limits<float>::epsilon();
+
+  glm::vec3 edge1 = glm::vec3(triangle_vertices[1].x - triangle_vertices[0].x,
+                              triangle_vertices[1].y - triangle_vertices[0].y,
+                              triangle_vertices[1].z - triangle_vertices[0].z);
+  glm::vec3 edge2 = glm::vec3(triangle_vertices[2].x - triangle_vertices[0].x,
+                              triangle_vertices[2].y - triangle_vertices[0].y,
+                              triangle_vertices[2].z - triangle_vertices[0].z);
+  glm::vec3 ray_cross_e2 = glm::cross(ray_vector, edge2);
+  float det = glm::dot(edge1, ray_cross_e2);
+
+  if (det > -epsilon && det < epsilon)
+    return -1.0f; // This ray is parallel to this triangle.
+
+  float inv_det = 1.0f / det;
+  glm::vec3 s =
+      ray_origin - glm::vec3(triangle_vertices[0].x, triangle_vertices[0].y,
+                             triangle_vertices[0].z);
+  float u = inv_det * glm::dot(s, ray_cross_e2);
+
+  if (u < 0 || u > 1)
+    return -1.0f;
+
+  glm::vec3 s_cross_e1 = glm::cross(s, edge1);
+  float v = inv_det * glm::dot(ray_vector, s_cross_e1);
+
+  if (v < 0 || u + v > 1)
+    return -1.0f;
+
+  // At this stage we can compute t to find out where the intersection point is
+  // on the line.
+  float t = inv_det * glm::dot(edge2, s_cross_e1);
+
+  if (t > epsilon) { // ray intersection
+    out_intersection_point = ray_origin + ray_vector * t;
+    return t;
+  } else { // This means that there is a line intersection but not a ray
+           // intersection.
+    return -1.0f;
+  }
+}
+
+// Function to trace the ray and determine if it intersects any spheres or
+// trigs
+P FirstIntersection(Ray ray) {
+  P result;
+  result.diff = glm::vec3(backgroundx, backgroundy, backgroundz);
+  result.spec = glm::vec3(backgroundx, backgroundy, backgroundz);
+  float closest = f_inf;
+  float distance = f_inf;
+  glm::vec3 intersectionPoint;
+  glm::vec3 normal;
+
+  // Check for sphere intersections
+  for (const auto &sphere : spheres) {
+    Vec3 pos = std::get<0>(sphere);
+    float radius = std::get<1>(sphere);
+    Vec3 diff = std::get<2>(sphere);
+    Vec3 spec = get<3>(sphere);
+    float shininess = get<4>(sphere);
+
+    // If ray intersects sphere and is closer than before, populate result
+    distance = ray_intersects_sphere(ray, pos, radius);
+    if (distance > 0.0f && distance < closest) {
+      result.diff = glm::vec3(diff.x, diff.y, diff.z);
+      result.spec = glm::vec3(spec.x, spec.y, spec.z);
+      intersectionPoint = ray.origin + ray.direction * distance;
+      result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
+                             intersectionPoint.z);
+      normal =
+          glm::normalize(intersectionPoint - glm::vec3(pos.x, pos.y, pos.z));
+      result.normal = glm::vec3(normal.x, normal.y, normal.z);
+      closest = distance;
+      result.shine = shininess;
+    }
+  }
+
+  // Check for triangle intersections
+  for (const auto &quad : quads) {
+    std::vector<Vec3> vertices = std::get<0>(quad);
+
+    // Split the quad into two trigs: (0, 1, 2) and (0, 1, 3)
+    std::vector<Vec3> vertices1 = {vertices[0], vertices[1], vertices[2]};
+    std::vector<Vec3> vertices2 = {vertices[1], vertices[2], vertices[3]};
+
+    distance = ray_intersects_triangle(ray.origin, ray.direction, vertices1,
+                                       intersectionPoint);
+    // If ray intersects quad and is closer than before, populate result
+    if (distance > 0.0f && distance < closest) {
+      Vec3 diff = std::get<1>(quad);
+      Vec3 spec = get<2>(quad);
+      float shininess = get<3>(quad);
+      result.diff = glm::vec3(diff.x, diff.y, diff.z);
+      result.spec = glm::vec3(spec.x, spec.y, spec.z);
+      result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
+                             intersectionPoint.z);
+      normal = glm::cross(glm::vec3(vertices1[1].x - vertices1[0].x,
+                                    vertices1[1].y - vertices1[0].y,
+                                    vertices1[1].z - vertices1[0].z),
+                          glm::vec3(vertices1[2].x - vertices1[0].x,
+                                    vertices1[2].y - vertices1[0].y,
+                                    vertices1[2].z - vertices1[0].z));
+      normal = glm::normalize(-normal); // oops, I needed to flip normals
+      result.normal = glm::vec3(normal.x, normal.y, normal.z);
+      closest = distance;
+      result.shine = shininess;
+    }
+
+    distance = ray_intersects_triangle(ray.origin, ray.direction, vertices2,
+                                       intersectionPoint);
+    // If ray intersects quad and is closer than before, populate result
+    if (distance > 0.0f && distance < closest) {
+      Vec3 diff = std::get<1>(quad);
+      Vec3 spec = get<2>(quad);
+      float shininess = get<3>(quad);
+      result.diff = glm::vec3(diff.x, diff.y, diff.z);
+      result.spec = glm::vec3(spec.x, spec.y, spec.z);
+      result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
+                             intersectionPoint.z);
+      normal = glm::cross(glm::vec3(vertices2[1].x - vertices2[0].x,
+                                    vertices2[1].y - vertices2[0].y,
+                                    vertices2[1].z - vertices2[0].z),
+                          glm::vec3(vertices2[2].x - vertices2[0].x,
+                                    vertices2[2].y - vertices2[0].y,
+                                    vertices2[2].z - vertices2[0].z));
+      normal = glm::normalize(normal);
+      result.normal = glm::vec3(normal.x, normal.y, normal.z);
+      closest = distance;
+      result.shine = shininess;
+    }
+  }
+  result.distance = closest;
+  return result;
+}
+
+// Since none of the slides contain the Phong equation
+// I used this as my source
+// https://inspirnathan.com/posts/57-shadertoy-tutorial-part-11
+// It might look similar, but I can't reinvent the whell since no slide had the
+// equation and I had to look it up somewhere on the internet
+glm::vec3 Phong(P p, glm::vec3 l, Light light) {
+  glm::vec3 diffuse;
+  glm::vec3 specular;
+
+  glm::vec3 N = glm::normalize(p.normal);
+  glm::vec3 L = glm::normalize(l - p.loc);
+
+  float dotLN = glm::dot(L, N);
+
+  glm::vec3 light_diff = {light.diff.x, light.diff.y, light.diff.z};
+
+  diffuse = p.diff * dotLN * light_diff;
+
+  glm::vec3 R = glm::reflect(L, N);
+  glm::vec3 V = glm::normalize(p.loc - camera_pos);
+
+  float dotRV = glm::dot(R, V);
+  float alpha = p.shine;
+
+  glm::vec3 light_spec = {light.spec.x, light.spec.y, light.spec.z};
+
+  specular = p.spec * light_spec * pow(dotRV, alpha);
+
+  return diffuse + specular;
+}
+
+glm::vec3 Trace(Ray ray, int depth) {
+  glm::vec3 result_color = {0.0f, 0.0f, 0.0f};
+  P p = FirstIntersection(ray);
+
+  // this is for black-white depth debugging
+  float start = 640.0f;
+  float end = 1000.0f;
+  float scaledValue = (p.distance - start) / (end - start);
+  int remappedValue = static_cast<int>(scaledValue * 255.0f);
+
+  // out of the scene
+  if (p.distance == f_inf) {
+    // p.diff = glm::vec3(1.0f, 0.0f, 0.0f);
+    // printf("hitting background\n");
+    return glm::vec3{backgroundx, backgroundy, backgroundz};
+  }
+  // debugging gray-scale depth map
+  // return glm::vec3{remappedValue, remappedValue, remappedValue};
+
+  // get all light contributions
+  for (const auto &light : lights) {
+    glm::vec3 light_loc(light.pos.x, light.pos.y, light.pos.z);
+    Ray light_ray = {light_loc, p.loc - light_loc};
+    P l = FirstIntersection(light_ray);
+    // need to add some minor offset to account for float precision
+    if (glm::distance(l.loc, p.loc) <= 0.1f) {
+      // result_color += p.diff;
+      glm::vec3 contribution = Phong(p, light_loc, light);
+      result_color += contribution;
+    }
+  }
+  // recursion ends or we hit diffuse
+  if (depth <= 1 || (p.diff.x > 0.0f || p.diff.y > 0.0f || p.diff.z > 0.0f)) {
+    // result_color.x = glm::clamp(result_color.x, 0.0f, 1.0f);
+    // result_color.y = glm::clamp(result_color.y, 0.0f, 1.0f);
+    // result_color.z = glm::clamp(result_color.z, 0.0f, 1.0f);
+    return result_color;
+  }
+  // setup reflected ray
+  Ray reflected;
+  reflected.direction = glm::normalize(glm::reflect(ray.direction, p.normal));
+  reflected.origin = p.loc + 0.1f * reflected.direction;
+  glm::vec3 traced = Trace(reflected, depth - 1);
+  // float light_factor = (1.0f / pow((float)(maxdepth-depth+ 1), 2));
+  // traced = traced *  light_factor;
+  result_color += traced;
+  // result_color.x = glm::clamp(result_color.x, 0.0f, 1.0f);
+  // result_color.y = glm::clamp(result_color.y, 0.0f, 1.0f);
+  // result_color.z = glm::clamp(result_color.z, 0.0f, 1.0f);
+
+  return result_color;
+}
+
+void raytrace(int x, int y, int thread_num) {
+  Ray ray = CalculateRay(x, y);
+  glm::vec3 color = Trace(ray, maxdepth);
+  color *= 255;
+  // clamp colors
+  color.x = std::min(color.x, 255.0f);
+  color.y = std::min(color.y, 255.0f);
+  color.z = std::min(color.z, 255.0f);
+  pixels[x][y] = {static_cast<int>(color.x), static_cast<int>(color.y),
+                  static_cast<int>(color.z)};
+}
