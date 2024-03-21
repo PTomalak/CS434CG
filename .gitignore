@@ -1,5 +1,3 @@
-/animation/json/*.json
-/animation/bmp/*.bmp
-/obj/*.o
+*.o
 log/cxx_log
 log/cxx_log_clean
