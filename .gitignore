@@ -1,3 +1,4 @@
 *.o
-log/cxx_log
-log/cxx_log_clean
+*.log
+output.bmp
+
