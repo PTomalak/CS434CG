@@ -7,6 +7,7 @@
 #include <vector>
 #include <array>
 #include <fstream>
+#include <tuple>
 
 int readJSON(std::string filename);
 void printJSON();
