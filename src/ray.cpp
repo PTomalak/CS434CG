@@ -22,6 +22,7 @@ struct P {
   float shine;
   glm::vec3 normal;
   float distance;
+  float refractive_idx;
 };
 
 using namespace std;
@@ -42,16 +43,35 @@ struct Light {
 
 extern vector<Light> lights;
 extern vector<tuple<Vec3, float, Vec3, Vec3, float>> spheres;
-extern vector<tuple<vector<Vec3>, Vec3, Vec3, float>> quads;
+extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float>> quads;
 
 const float PI = 3.14159265358979323846f;
 const float fov = 150.0f;
 const float f_inf = std::numeric_limits<float>::infinity();
+const float init_refractive_idx = 1.0f;
 
 // Camera is so far to recreate a similar setup as on example pictures
 glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
 
 float reflection_loss = 1.0f;
+
+// Snell's Law, returns refracted vector
+glm::vec3 Refraction(float n1, float n2, P p, Ray r) {
+  // float theta1 = glm::asin(glm::dot(p.normal, r.direction) / (glm::length(p.normal) * glm::length(r.direction)));
+
+  // float theta2 = glm::asin(n1 * glm::sin(theta1) / n2);
+  // glm::vec3 rParallel = glm::length(r.direction) * glm::cos(theta2) * p.normal;
+  // glm::vec3 rPerp = glm::length(r.direction) * glm::sin(theta2) * (r.direction - (glm::dot(r.direction, p.normal) * p.normal));
+  // glm::vec3 res = rParallel + rPerp;
+  // return res;
+  float n = n1 / n2;
+  float cosI = -1 * glm::dot(p.normal, r.direction);
+  float sinT2 = n * n * (1.0 - cosI * cosI);
+  if (sinT2 > 1.0) return glm::vec3(-1, -1, -1);
+  float cosT = glm::sqrt(1.0 - sinT2);
+
+  return n * r.direction + (n * cosI - cosT) * p.normal;
+}
 
 // Gramm-Schmidt orthonormalization
 void GrammSchmidt(glm::vec3 &l, glm::vec3 &v, glm::vec3 &u) {
@@ -201,6 +221,7 @@ P FirstIntersection(Ray ray) {
       result.normal = glm::vec3(normal.x, normal.y, normal.z);
       closest = distance;
       result.shine = shininess;
+      result.refractive_idx = -1;
     }
   }
 
@@ -219,6 +240,7 @@ P FirstIntersection(Ray ray) {
       Vec3 diff = std::get<1>(quad);
       Vec3 spec = get<2>(quad);
       float shininess = get<3>(quad);
+      float refractive = get<4>(quad);
       result.diff = glm::vec3(diff.x, diff.y, diff.z);
       result.spec = glm::vec3(spec.x, spec.y, spec.z);
       result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
@@ -233,6 +255,7 @@ P FirstIntersection(Ray ray) {
       result.normal = glm::vec3(normal.x, normal.y, normal.z);
       closest = distance;
       result.shine = shininess;
+      result.refractive_idx = refractive;
     }
 
     distance = ray_intersects_triangle(ray.origin, ray.direction, vertices2,
@@ -242,6 +265,7 @@ P FirstIntersection(Ray ray) {
       Vec3 diff = std::get<1>(quad);
       Vec3 spec = get<2>(quad);
       float shininess = get<3>(quad);
+      float refractive = get<4>(quad);
       result.diff = glm::vec3(diff.x, diff.y, diff.z);
       result.spec = glm::vec3(spec.x, spec.y, spec.z);
       result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
@@ -256,8 +280,11 @@ P FirstIntersection(Ray ray) {
       result.normal = glm::vec3(normal.x, normal.y, normal.z);
       closest = distance;
       result.shine = shininess;
+      result.refractive_idx = refractive;
     }
   }
+  // if (result.refractive_idx > 0 && result.distance != f_inf) 
+  //   std::cout << result.refractive_idx << std::endl;
   result.distance = closest;
   return result;
 }
@@ -293,9 +320,10 @@ glm::vec3 Phong(P p, glm::vec3 l, Light light) {
   return diffuse + specular;
 }
 
-glm::vec3 Trace(Ray ray, int depth) {
+glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
   glm::vec3 result_color = {0.0f, 0.0f, 0.0f};
   P p = FirstIntersection(ray);
+
 
   // this is for black-white depth debugging
   float start = 640.0f;
@@ -324,6 +352,7 @@ glm::vec3 Trace(Ray ray, int depth) {
       result_color += contribution;
     }
   }
+
   // recursion ends or we hit diffuse
   if (depth <= 1 || (p.diff.x > 0.0f || p.diff.y > 0.0f || p.diff.z > 0.0f)) {
     // result_color.x = glm::clamp(result_color.x, 0.0f, 1.0f);
@@ -335,7 +364,17 @@ glm::vec3 Trace(Ray ray, int depth) {
   Ray reflected;
   reflected.direction = glm::normalize(glm::reflect(ray.direction, p.normal));
   reflected.origin = p.loc + 0.1f * reflected.direction;
-  glm::vec3 traced = Trace(reflected, depth - 1);
+  glm::vec3 traced = Trace(reflected, depth - 1, refractive_idx);
+
+
+  // setup refracted ray, if applicable
+  if (p.refractive_idx > 0.0f) {
+    Ray refracted;
+    refracted.direction = glm::normalize(Refraction(refractive_idx, p.refractive_idx, p, ray));
+    refracted.origin = p.loc + 0.1f * refracted.direction;
+    glm::vec3 refracted_trace = Trace(refracted, depth - 1, p.refractive_idx);
+    traced += refracted_trace;
+  }
   // float light_factor = (1.0f / pow((float)(maxdepth-depth+ 1), 2));
   // traced = traced *  light_factor;
   result_color += traced;
@@ -348,7 +387,7 @@ glm::vec3 Trace(Ray ray, int depth) {
 
 void raytrace(int x, int y, int thread_num) {
   Ray ray = CalculateRay(x, y);
-  glm::vec3 color = Trace(ray, maxdepth);
+  glm::vec3 color = Trace(ray, maxdepth, init_refractive_idx);
   color *= 255;
   // clamp colors
   color.x = std::min(color.x, 255.0f);
