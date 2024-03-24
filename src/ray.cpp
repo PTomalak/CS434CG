@@ -57,20 +57,31 @@ float reflection_loss = 1.0f;
 
 // Snell's Law, returns refracted vector
 glm::vec3 Refraction(float n1, float n2, P p, Ray r) {
-  // float theta1 = glm::asin(glm::dot(p.normal, r.direction) / (glm::length(p.normal) * glm::length(r.direction)));
-
-  // float theta2 = glm::asin(n1 * glm::sin(theta1) / n2);
-  // glm::vec3 rParallel = glm::length(r.direction) * glm::cos(theta2) * p.normal;
-  // glm::vec3 rPerp = glm::length(r.direction) * glm::sin(theta2) * (r.direction - (glm::dot(r.direction, p.normal) * p.normal));
-  // glm::vec3 res = rParallel + rPerp;
-  // return res;
+  // The following formula is taken from "Reflections and Refractions in Ray Tracing" by Bram de Greve 
+  // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
   float n = n1 / n2;
-  float cosI = -1 * glm::dot(p.normal, r.direction);
+  float cosI = glm::abs(glm::dot(p.normal, r.direction));
   float sinT2 = n * n * (1.0 - cosI * cosI);
-  if (sinT2 > 1.0) return glm::vec3(-1, -1, -1);
+  if (sinT2 > 1.0) {
+    return glm::vec3(-1, -1, -1);
+  }
   float cosT = glm::sqrt(1.0 - sinT2);
 
-  return n * r.direction + (n * cosI - cosT) * p.normal;
+  glm::vec3 refracted = n * r.direction + (n * cosI - cosT) * p.normal;
+
+  return refracted;
+
+  // float cosi = glm::clamp(-1.f, 1.f, glm::dot(r.direction, p.normal));
+  // float etai = n1, etat = n2;
+  // glm::vec3 n = p.normal;
+  // if (cosi < 0) { cosi = -cosi; } else { std::swap(etai, etat); n = -1.f * p.normal; }
+  // float eta = etai / etat;
+  // float k = 1 - eta * eta * (1 - cosi * cosi);
+  // //return k < 0 ? 0 : eta * I + (eta * cosi - sqrtf(k)) * n;
+
+  // if (k < 0)
+  //   return glm::vec3(-1,-1,-1);
+  // return eta * r.direction + (eta * cosi - glm::sqrt(k)) * p.normal;
 }
 
 // Gramm-Schmidt orthonormalization
@@ -191,10 +202,13 @@ float ray_intersects_triangle(glm::vec3 ray_origin, glm::vec3 ray_vector,
 
 // Function to trace the ray and determine if it intersects any spheres or
 // trigs
-P FirstIntersection(Ray ray) {
+// mode: 0 - don't ignore refractive / transparent objects
+// mode: 1 - ignore refractive / transparent objects
+P FirstIntersection(Ray ray, int mode) {
   P result;
   result.diff = glm::vec3(backgroundx, backgroundy, backgroundz);
   result.spec = glm::vec3(backgroundx, backgroundy, backgroundz);
+  result.refractive_idx = -1;
   float closest = f_inf;
   float distance = f_inf;
   glm::vec3 intersectionPoint;
@@ -241,6 +255,7 @@ P FirstIntersection(Ray ray) {
       Vec3 spec = get<2>(quad);
       float shininess = get<3>(quad);
       float refractive = get<4>(quad);
+      if (refractive > 0.0f && mode == 1) continue;
       result.diff = glm::vec3(diff.x, diff.y, diff.z);
       result.spec = glm::vec3(spec.x, spec.y, spec.z);
       result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
@@ -266,6 +281,7 @@ P FirstIntersection(Ray ray) {
       Vec3 spec = get<2>(quad);
       float shininess = get<3>(quad);
       float refractive = get<4>(quad);
+      if (refractive > 0.0f && mode == 1) continue;
       result.diff = glm::vec3(diff.x, diff.y, diff.z);
       result.spec = glm::vec3(spec.x, spec.y, spec.z);
       result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
@@ -283,8 +299,6 @@ P FirstIntersection(Ray ray) {
       result.refractive_idx = refractive;
     }
   }
-  // if (result.refractive_idx > 0 && result.distance != f_inf) 
-  //   std::cout << result.refractive_idx << std::endl;
   result.distance = closest;
   return result;
 }
@@ -320,9 +334,11 @@ glm::vec3 Phong(P p, glm::vec3 l, Light light) {
   return diffuse + specular;
 }
 
+// Each iteration we should keep track of the current ray
+// depth, and the current refractive index
 glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
   glm::vec3 result_color = {0.0f, 0.0f, 0.0f};
-  P p = FirstIntersection(ray);
+  P p = FirstIntersection(ray, 0);
 
 
   // this is for black-white depth debugging
@@ -344,10 +360,10 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
   for (const auto &light : lights) {
     glm::vec3 light_loc(light.pos.x, light.pos.y, light.pos.z);
     Ray light_ray = {light_loc, p.loc - light_loc};
-    P l = FirstIntersection(light_ray);
+    P l = FirstIntersection(light_ray, 1);
+
     // need to add some minor offset to account for float precision
     if (glm::distance(l.loc, p.loc) <= 0.1f) {
-      // result_color += p.diff;
       glm::vec3 contribution = Phong(p, light_loc, light);
       result_color += contribution;
     }
@@ -366,13 +382,13 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
   reflected.origin = p.loc + 0.1f * reflected.direction;
   glm::vec3 traced = Trace(reflected, depth - 1, refractive_idx);
 
-
   // setup refracted ray, if applicable
   if (p.refractive_idx > 0.0f) {
     Ray refracted;
     refracted.direction = glm::normalize(Refraction(refractive_idx, p.refractive_idx, p, ray));
-    refracted.origin = p.loc + 0.1f * refracted.direction;
+    refracted.origin = p.loc + 0.01f * refracted.direction;
     glm::vec3 refracted_trace = Trace(refracted, depth - 1, p.refractive_idx);
+    // Add this to the reflected ray result
     traced += refracted_trace;
   }
   // float light_factor = (1.0f / pow((float)(maxdepth-depth+ 1), 2));
