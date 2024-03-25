@@ -3,7 +3,13 @@
 
 #include <vector>
 #include <array>
+
+#ifdef __APPLE__
+#include </opt/homebrew/Cellar/glm/1.0.1/include/glm/glm.hpp>
+#else
 #include <glm/glm.hpp>
+#endif
+
 #include <cmath>
 #include <tuple>
 #include <iostream>
