@@ -2,12 +2,13 @@
 CXX = g++
 
 # Flags
-CXXFLAGS = -Wno-error=missing-field-initializers -I$(INC_DIR) -I$(MAC_DIR) -O3 -march=native
+CXXFLAGS = -Wno-error=missing-field-initializers -I$(INC_DIR) -I$(MAC_DIR1) -I$(MAC_DIR2) -O3 -march=native
 
 # Directories
 SRC_DIR = ./src
 INC_DIR = ./include
-MAC_DIR = /usr/local/Cellar
+MAC_DIR1 = /usr/local/Cellar
+MAC_DIR2 = /opt/homebrew/Cellar
 OBJ_DIR = ./obj
 EXE_DIR = ./exe
 
