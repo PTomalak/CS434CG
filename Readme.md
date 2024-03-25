@@ -16,6 +16,7 @@
 - stb for saving output as BMP (`stb_image_write.h`)
 - RapidJSON for reading json parameters (`document.h`, `filereadstream.h`)
 - SDL for displaying the raytracing live in a window (optional in context of the assignment)
+- glm for vector math
 
 ### Running base program
 - `./ray (input file) (output file .bmp) [optional flag]`
