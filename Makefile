@@ -2,7 +2,7 @@
 CXX = g++
 
 # Flags
-CXXFLAGS = -fopenmp -Wno-error=missing-field-initializers -lSDL2 -lSDL2main -I/usr/include/SDL2 -lm -I$(INC_DIR) -O3 -march=native
+CXXFLAGS = -Wno-error=missing-field-initializers -I$(INC_DIR) -I/usr/local/include -O3 -march=native
 
 # Directories
 SRC_DIR = ./src
