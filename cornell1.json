@@ -42,7 +42,8 @@
       ],
       "DIFF": [0.25, 0.25, 0.25],
       "SPEC": [1.0, 1.0, 0.0],
-      "SHININESS": 2000.0
+      "SHININESS": 2000.0,
+      "REFRACTIVE": -1
     },
     {
       "vertices": [
@@ -53,7 +54,8 @@
       ],
       "DIFF": [1.0, 1.0, 1.0],
       "SPEC": [1.0, 0, 0],
-      "SHININESS": 10.0
+      "SHININESS": 10.0,
+      "REFRACTIVE": -1
     },
     {
       "vertices": [
@@ -64,7 +66,8 @@
       ],
       "DIFF": [0.7, 0.7, 0.1255],
       "SPEC": [1.0, 1.0, 1.0],
-      "SHININESS": 10.0
+      "SHININESS": 10.0,
+      "REFRACTIVE": -1
     },
     {
       "vertices": [
@@ -75,7 +78,8 @@
       ],
       "DIFF": [0, 1.0, 0],
       "SPEC": [0, 0, 0],
-      "SHININESS": 10.0
+      "SHININESS": 10.0,
+      "REFRACTIVE": -1
     },
     {
       "vertices": [
@@ -86,7 +90,8 @@
       ],
       "DIFF": [1.0, 0.2, 0.2],
       "SPEC": [1, 1, 1],
-      "SHININESS": 100.0
+      "SHININESS": 100.0,
+      "REFRACTIVE": -1
     }
   ]
 }
