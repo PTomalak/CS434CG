@@ -61,7 +61,7 @@ def save_object_lines(obj_filename):
                 if line.startswith("v "):
                     vertex_values = [float(value) for value in line[2:].split()]
                     current_object["v"].append(
-                        vertex_values
+                        [vertex_values[0] * -1.0, vertex_values[1], vertex_values[2]]
                     )  # Save vertex values as list of floats
                 elif line.startswith("f "):
                     face_values = [
@@ -79,12 +79,12 @@ def save_object_lines(obj_filename):
 
 
 result = {
-    "ANTIALIAS": 2,
+    "ANTIALIAS": 1.5,
     "BACKGROUND": [0.0, 0.0, 0.0],
-    "MAXDEPTH": 2,
-    "RESOLUTION": [400, 400],
-    "THREADS": 32,
-    "lights": [{"POS": [-100, 0, -200], "DIFF": [1.0, 1.0, 1.0], "SPEC": [1.0, 1.0, 1.0]}, {"POS": [100, 0, -200], "DIFF": [1.0, 1.0, 1.0], "SPEC": [1.0, 1.0, 1.0]}],
+    "MAXDEPTH": 4,
+    "RESOLUTION": [800, 800],
+    "THREADS": 64,
+    "lights": [{"POS": [0, 0, -900], "DIFF": [0.5, 0.5, 0.5], "SPEC": [0.0, 0.0, 0.0]}],
     "spheres": [],
     "quads": [],
 }
@@ -92,37 +92,40 @@ result = {
 
 objects = save_object_lines("exported_scene.obj")
 
-num = 3
 
-for face in objects[num]["f"]:
-    if (len(face) == 4):
-        add_quad(
-            result,
-            vertices=[
-                objects[num]["v"][face[3]],
-                objects[num]["v"][face[2]],
-                objects[num]["v"][face[0]],
-                objects[num]["v"][face[1]],
-            ],
-            diff=[1.0, 1.0, 1.0],
-            spec=[1.0, 1.0, 1.0],
-            shininess=100.0,
-            refractive=-1,
-        )
-    if (len(face) == 3):
-        add_quad(
-            result,
-            vertices=[
-                objects[num]["v"][face[2]],
-                objects[num]["v"][face[2]],
-                objects[num]["v"][face[0]],
-                objects[num]["v"][face[1]],
-            ],
-            diff=[1.0, 1.0, 1.0],
-            spec=[1.0, 1.0, 1.0],
-            shininess=100.0,
-            refractive=-1,
-        )
+
+
+for x in range(len(objects)):
+    print("loading object ", x)
+    for face in objects[x]["f"]:
+        if (len(face) == 4):
+            add_quad(
+                result,
+                vertices=[
+                    objects[x]["v"][face[2]],
+                    objects[x]["v"][face[3]],
+                    objects[x]["v"][face[1]],
+                    objects[x]["v"][face[0]],
+                ],
+                diff=[0.4, 0.7, 1.0],
+                spec=[1.0, 1.0, 1.0],
+                shininess=100.0,
+                refractive=-1,
+            )
+        if (len(face) == 3):
+            add_quad(
+                result,
+                vertices=[
+                    objects[x]["v"][face[2]],
+                    objects[x]["v"][face[2]],
+                    objects[x]["v"][face[1]],
+                    objects[x]["v"][face[0]],
+                ],
+                diff=[0.0, 0.0, 0.0],
+                spec=[0, 0, 0],
+                shininess=10000000000000.0,
+                refractive=1.3,
+            )
 
 
 # Save the entire array into JSON

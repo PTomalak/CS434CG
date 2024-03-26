@@ -10,6 +10,7 @@
 #include <tuple>
 #include <unistd.h>
 #include <vector>
+#include <chrono>
 
 int width;
 int height;
@@ -60,6 +61,8 @@ int main(int argc, char *argv[]) {
   width = resolutionX * antialias;
   height = resolutionY * antialias;
 
+  auto startTime = std::chrono::steady_clock::now();
+
   // for debug prints uncomment:
   // printJSON();
 
@@ -94,6 +97,12 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < THREADS; ++i) {
     threads[i].join();
   }
+  
+  auto endTime = std::chrono::steady_clock::now();
+  auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+  int totalPixels = width * height;
+  double timePerPixel = static_cast<double>(elapsedTime) / totalPixels;
+  printf("processed %d pixels in %d s. Time per pixel: %.3f ms\n", totalPixels, elapsedTime/1000, timePerPixel);
 
   std::string savename = argv[2];
   save_bmp(savename, antialias);
