@@ -13,7 +13,7 @@
 
 int width;
 int height;
-int THREADS = 24; // one of those will be used for SDL
+int THREADS = 5; // one of those will be used for SDL
 
 
 
@@ -23,6 +23,7 @@ struct Vec3 {
 
 // Global variables
 std::vector<std::vector<std::array<int, 3>>> pixels;
+std::vector<glm::vec3> sensor_cell_locs;
 float antialias;
 float backgroundx;
 float backgroundy;
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
               << " <savename>" << std::endl;
     return 1;
   }
+
 
   // Handle JSON
   std::string input = argv[1];
@@ -85,7 +87,7 @@ int main(int argc, char *argv[]) {
       for (int p = start; p < end; ++p) {
         int x = p % width;
         int y = p / width;
-        raytrace(x, y, i);
+        raytrace_blur(x, y, i);
       }
     });
   }

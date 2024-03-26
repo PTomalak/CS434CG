@@ -1,8 +1,8 @@
 # Compiler
-CXX = g++
+CXX = g++-13
 
 # Flags
-CXXFLAGS = -Wno-error=missing-field-initializers -I$(INC_DIR) -I$(MAC_DIR1) -I$(MAC_DIR2) -O3 -march=native
+CXXFLAGS = -Wno-error=missing-field-initializers -I$(INC_DIR) -I$(MAC_DIR1) -I$(MAC_DIR2) -g -march=native
 
 # Directories
 SRC_DIR = ./src
