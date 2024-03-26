@@ -376,11 +376,12 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
     // result_color.z = glm::clamp(result_color.z, 0.0f, 1.0f);
     return result_color;
   }
+
   // setup reflected ray
   Ray reflected;
   reflected.direction = glm::normalize(glm::reflect(ray.direction, p.normal));
   reflected.origin = p.loc + 0.1f * reflected.direction;
-  glm::vec3 traced = Trace(reflected, depth - 1, refractive_idx);
+  glm::vec3 traced = 0.04f * Trace(reflected, depth - 1, refractive_idx); // add 
 
   // setup refracted ray, if applicable
   if (p.refractive_idx > 0.0f) {
@@ -389,7 +390,7 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
     refracted.origin = p.loc + 0.01f * refracted.direction;
     glm::vec3 refracted_trace = Trace(refracted, depth - 1, p.refractive_idx);
     // Add this to the reflected ray result
-    traced += refracted_trace;
+    traced += 0.94f * refracted_trace;
   }
   // float light_factor = (1.0f / pow((float)(maxdepth-depth+ 1), 2));
   // traced = traced *  light_factor;
