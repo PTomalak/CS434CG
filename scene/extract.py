@@ -11,5 +11,7 @@ bpy.ops.object.select_all(action='SELECT')
 # Export selected objects as OBJ
 bpy.ops.wm.obj_export(
     filepath=export_path,
-    global_scale=150
+    global_scale=150,
+    forward_axis="NEGATIVE_Y",
+    up_axis="Z"
 )
