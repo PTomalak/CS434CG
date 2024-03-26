@@ -7,7 +7,7 @@ chmod +x ./exe/ray
 
 # setup scene
 cd scene
-#bash extract.sh
+bash extract.sh
 python3 parser.py
 cd ..
 
