@@ -5,6 +5,12 @@ make all > ./log/cxx_clean.log 2>&1
 res=$?
 chmod +x ./exe/ray
 
+# setup scene
+cd scene
+bash extract.sh
+python3 parser.py
+cd ..
+
 # colorize log
 # https://github.com/cornet/ccze
 if command -v ccze &> /dev/null
