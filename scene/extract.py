@@ -1,5 +1,7 @@
 import bpy
 
+# https://docs.blender.org/api/current/bpy.ops.wm.html#bpy.ops.wm.obj_export
+
 # Path to export OBJ file
 export_path = "./exported_scene.obj"
 
