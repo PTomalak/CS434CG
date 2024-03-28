@@ -19,7 +19,7 @@ import json
  v -Z
 
 """
-
+# https://www.loc.gov/preservation/digital/formats/fdd/fdd000508.shtml
 
 def add_quad(array, vertices, diff, spec, shininess, refractive):
     quad = {
@@ -79,10 +79,10 @@ def save_object_lines(obj_filename):
 
 
 result = {
-    "ANTIALIAS": 1.5,
+    "ANTIALIAS": 1.0,
     "BACKGROUND": [0.0, 0.0, 0.0],
-    "MAXDEPTH": 4,
-    "RESOLUTION": [800, 800],
+    "MAXDEPTH": 8,
+    "RESOLUTION": [240, 240],
     "THREADS": 64,
     "lights": [{"POS": [0, 0, -900], "DIFF": [0.5, 0.5, 0.5], "SPEC": [0.0, 0.0, 0.0]}],
     "spheres": [],
@@ -124,7 +124,7 @@ for x in range(len(objects)):
                 diff=[0.0, 0.0, 0.0],
                 spec=[0, 0, 0],
                 shininess=10000000000000.0,
-                refractive=1.3,
+                refractive=1.2,
             )
 
 
