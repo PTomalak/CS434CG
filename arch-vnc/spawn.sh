@@ -1,6 +1,13 @@
 #!/bin/bash
 NICKNAME="cguser"
 
+currdir=$(pwd | awk -F/ '{print $NF}')
+
+if [ "$currdir" != "arch-vnc" ]; then
+    echo "You are not in correct folder, go to 'arch-vnc'"
+    exit 1
+fi
+
 chmod +x ./scripts/*
 docker stop -t 1 arch-vnc && docker rm arch-vnc
 docker build -t arch-vnc .

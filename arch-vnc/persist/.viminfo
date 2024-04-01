@@ -28,31 +28,39 @@
 
 # File marks:
 '0  4  0  ~/Desktop/run
-|4,48,4,0,1712006283,"~/Desktop/run"
-'1  4  51  ~/Desktop/run
-|4,49,4,51,1712006126,"~/Desktop/run"
-'2  5  8  ~/Desktop/run
-|4,50,5,8,1712005971,"~/Desktop/run"
-'3  5  8  ~/Desktop/run
-|4,51,5,8,1712005971,"~/Desktop/run"
-'4  4  39  ~/Desktop/run
-|4,52,4,39,1712005858,"~/Desktop/run"
-'5  4  39  ~/Desktop/run
-|4,53,4,39,1712005858,"~/Desktop/run"
-'6  4  39  ~/Desktop/run
-|4,54,4,39,1712005858,"~/Desktop/run"
-'7  4  39  ~/Desktop/run
-|4,55,4,39,1712005858,"~/Desktop/run"
-'8  4  39  ~/Desktop/run
-|4,56,4,39,1712005858,"~/Desktop/run"
-'9  4  39  ~/Desktop/run
-|4,57,4,39,1712005858,"~/Desktop/run"
+|4,48,4,0,1712009396,"~/Desktop/run"
+'1  4  0  ~/Desktop/run
+|4,49,4,0,1712009393,"~/Desktop/run"
+'2  4  0  ~/Desktop/run
+|4,50,4,0,1712006283,"~/Desktop/run"
+'3  4  0  ~/Desktop/run
+|4,51,4,0,1712006283,"~/Desktop/run"
+'4  4  51  ~/Desktop/run
+|4,52,4,51,1712006126,"~/Desktop/run"
+'5  4  51  ~/Desktop/run
+|4,53,4,51,1712006126,"~/Desktop/run"
+'6  4  51  ~/Desktop/run
+|4,54,4,51,1712006126,"~/Desktop/run"
+'7  4  51  ~/Desktop/run
+|4,55,4,51,1712006126,"~/Desktop/run"
+'8  5  8  ~/Desktop/run
+|4,56,5,8,1712005971,"~/Desktop/run"
+'9  5  8  ~/Desktop/run
+|4,57,5,8,1712005971,"~/Desktop/run"
 
 # Jumplist (newest first):
+-'  4  0  ~/Desktop/run
+|4,39,4,0,1712009396,"~/Desktop/run"
+-'  4  0  ~/Desktop/run
+|4,39,4,0,1712009393,"~/Desktop/run"
 -'  4  0  ~/Desktop/run
 |4,39,4,0,1712006283,"~/Desktop/run"
 -'  4  51  ~/Desktop/run
 |4,39,4,51,1712006126,"~/Desktop/run"
+-'  5  8  ~/Desktop/run
+|4,39,5,8,1712005971,"~/Desktop/run"
+-'  5  8  ~/Desktop/run
+|4,39,5,8,1712005971,"~/Desktop/run"
 -'  5  8  ~/Desktop/run
 |4,39,5,8,1712005971,"~/Desktop/run"
 -'  5  8  ~/Desktop/run
@@ -81,11 +89,15 @@
 |4,39,1,0,1712005693,"~/Desktop/run"
 -'  1  0  ~/Desktop/run
 |4,39,1,0,1712005693,"~/Desktop/run"
+-'  1  0  ~/Desktop/run
+|4,39,1,0,1712005693,"~/Desktop/run"
+-'  1  0  ~/Desktop/run
+|4,39,1,0,1712005693,"~/Desktop/run"
 
 # History of marks within files (newest to oldest):
 
 > ~/Desktop/run
-	*	1712006283	0
+	*	1712009395	0
 	"	4	0
 	^	4	0
 	.	4	0

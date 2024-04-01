@@ -3,12 +3,12 @@
       xmlns:bookmark="http://www.freedesktop.org/standards/desktop-bookmarks"
       xmlns:mime="http://www.freedesktop.org/standards/shared-mime-info"
 >
-  <bookmark href="file:///" added="2024-04-01T21:07:50.624557Z" modified="2024-04-01T21:29:24.982227Z" visited="2024-04-01T21:07:50.624559Z">
+  <bookmark href="file:///" added="2024-04-01T21:07:50.624557Z" modified="2024-04-01T22:10:30.383326Z" visited="2024-04-01T21:07:50.624559Z">
     <info>
       <metadata owner="http://freedesktop.org">
         <mime:mime-type type="inode/directory"/>
         <bookmark:applications>
-          <bookmark:application name="Thunar" exec="&apos;Thunar %u&apos;" modified="2024-04-01T21:29:24.982225Z" count="3"/>
+          <bookmark:application name="Thunar" exec="&apos;Thunar %u&apos;" modified="2024-04-01T22:10:30.383325Z" count="4"/>
         </bookmark:applications>
       </metadata>
     </info>
@@ -33,12 +33,12 @@
       </metadata>
     </info>
   </bookmark>
-  <bookmark href="file:///home/cguser" added="2024-04-01T21:19:37.500834Z" modified="2024-04-01T21:19:37.500842Z" visited="2024-04-01T21:19:37.500836Z">
+  <bookmark href="file:///home/cguser" added="2024-04-01T21:19:37.500834Z" modified="2024-04-01T22:10:27.641951Z" visited="2024-04-01T21:19:37.500836Z">
     <info>
       <metadata owner="http://freedesktop.org">
         <mime:mime-type type="inode/directory"/>
         <bookmark:applications>
-          <bookmark:application name="Thunar" exec="&apos;Thunar %u&apos;" modified="2024-04-01T21:19:37.500838Z" count="1"/>
+          <bookmark:application name="Thunar" exec="&apos;Thunar %u&apos;" modified="2024-04-01T22:10:27.641949Z" count="2"/>
         </bookmark:applications>
       </metadata>
     </info>
@@ -109,6 +109,16 @@
         <mime:mime-type type="inode/directory"/>
         <bookmark:applications>
           <bookmark:application name="Thunar" exec="&apos;Thunar %u&apos;" modified="2024-04-01T21:27:16.830138Z" count="1"/>
+        </bookmark:applications>
+      </metadata>
+    </info>
+  </bookmark>
+  <bookmark href="file:///CS434CG" added="2024-04-01T22:10:23.582586Z" modified="2024-04-01T22:10:23.582589Z" visited="2024-04-01T22:10:23.582587Z">
+    <info>
+      <metadata owner="http://freedesktop.org">
+        <mime:mime-type type="inode/directory"/>
+        <bookmark:applications>
+          <bookmark:application name="Thunar" exec="&apos;Thunar %u&apos;" modified="2024-04-01T22:10:23.582588Z" count="1"/>
         </bookmark:applications>
       </metadata>
     </info>
