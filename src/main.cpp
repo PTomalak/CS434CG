@@ -3,6 +3,8 @@
 #include "json_helper.h"
 #include "ray.h"
 #include "sdl_thread.h"
+#include "sdl_gui.h"
+
 #include <array>
 #include <fstream>
 #include <iostream>
@@ -79,9 +81,10 @@ int main(int argc, char *argv[]) {
 
   // First thread for SDL handling
   threads[0] = std::thread(handleSDL, argc);
+  //threads[1] = std::thread(sdl_gui, argc);
 
   // setup threads for setting pixel colors
-  for (int i = 1; i < THREADS; ++i) {
+  for (int i = 2; i < THREADS; ++i) {
     threads[i] = std::thread([i]() {
       int start = (height * width * (i - 1)) / (THREADS - 1);
       int end = (height * width * i) / (THREADS - 1);
