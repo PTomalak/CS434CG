@@ -1,6 +1,0 @@
-#!/usr/bin/expect
-# Run vncserver :0 as if it were manually executed in the terminal
-spawn vncserver :0
-while (1) {
-        sleep 1000
-}

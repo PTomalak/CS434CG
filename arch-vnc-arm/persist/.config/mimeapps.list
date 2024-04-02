@@ -1,5 +1,0 @@
-[Added Associations]
-application/x-shellscript=xfce4-terminal.desktop;vim.desktop;
-
-[Default Applications]
-application/x-shellscript=vim.desktop
