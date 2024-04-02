@@ -7,10 +7,10 @@
  ],
  "MAXDEPTH": 8,
  "RESOLUTION": [
-  240,
-  240
+  1200,
+  1200
  ],
- "THREADS": 64,
+ "THREADS": 120,
  "lights": [
   {
    "POS": [
