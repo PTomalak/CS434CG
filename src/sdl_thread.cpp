@@ -12,7 +12,7 @@ void handleSDL(int argc) {
 
   // Initialize SDL
   SDL_Init(SDL_INIT_VIDEO);
-  window = SDL_CreateWindow("Raytracing", 4000, SDL_WINDOWPOS_UNDEFINED, width,
+  window = SDL_CreateWindow("Raytracing", 4000, SDL_WINDOWPOS_CENTERED, width,
                             height, SDL_WINDOW_SHOWN);
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 

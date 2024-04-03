@@ -17,7 +17,7 @@
 int width;
 int height;
 int THREADS = 24; // one of those will be used for SDL
-
+bool main_loop = true;
 
 
 struct Vec3 {
@@ -44,6 +44,33 @@ struct Light {
 std::vector<Light> lights;
 std::vector<std::tuple<Vec3, float, Vec3, Vec3, float>> spheres;
 std::vector<std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float>> quads;
+
+//std::thread threads[24];
+
+void render_scene(int argc) {
+  std::thread threads[THREADS];
+
+  threads[0] = std::thread(handleSDL, argc);
+
+  // setup threads for setting pixel colors
+  for (int i = 1; i < THREADS; ++i) {
+    //std::cout << "hello\n" << std::endl;
+    threads[i] = std::thread([i]() {
+      int start = (height * width * (i - 1)) / (THREADS - 1);
+      int end = (height * width * i) / (THREADS - 1);
+      for (int p = start; p < end; ++p) {
+        int x = p % width;
+        int y = p / width;
+        raytrace(x, y, i);
+      }
+    });
+  }
+
+  for (int i = 0; i < THREADS; ++i) {
+    threads[i].join();
+  }
+
+}
 
 int main(int argc, char *argv[]) {
   // Making sure output is as expected
@@ -77,30 +104,13 @@ int main(int argc, char *argv[]) {
   pixels.resize(width, std::vector<std::array<int, 3>>(height));
 
   // Create threads
-  std::thread threads[THREADS];
+  //std::thread threads[THREADS];
 
-  // First thread for SDL handling
-  threads[0] = std::thread(handleSDL, argc);
-  //threads[1] = std::thread(sdl_gui, argc);
-
-  // setup threads for setting pixel colors
-  for (int i = 2; i < THREADS; ++i) {
-    threads[i] = std::thread([i]() {
-      int start = (height * width * (i - 1)) / (THREADS - 1);
-      int end = (height * width * i) / (THREADS - 1);
-      for (int p = start; p < end; ++p) {
-        int x = p % width;
-        int y = p / width;
-        raytrace(x, y, i);
-      }
-    });
+  while (main_loop) {
+    sdl_gui(argc);
+    render_scene(argc);
   }
 
-  // Join threads
-  for (int i = 0; i < THREADS; ++i) {
-    threads[i].join();
-  }
-  
   auto endTime = std::chrono::steady_clock::now();
   auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
   int totalPixels = width * height;
