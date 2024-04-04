@@ -19,7 +19,9 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <string>
+#include <vector>
 #include <thread>
+#include <filesystem>
 
 #if !SDL_VERSION_ATLEAST(2, 0, 17)
 #error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
@@ -29,6 +31,35 @@ extern bool main_loop;
 extern std::string blender_input;
 extern int smooth;
 extern float aperature;
+
+
+namespace fs = std::filesystem;
+
+std::vector<std::string> findBlendFiles(const std::string& directory) {
+    std::vector<std::string> blendFiles;
+    for (const auto& entry : fs::directory_iterator(directory)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".blend") {
+            blendFiles.push_back(entry.path().string());
+        }
+    }
+    return blendFiles;
+}
+
+void populateBlendFilesMenu(const std::string& directory) {
+    auto blendFiles = findBlendFiles(directory);
+    if (!blendFiles.empty()) {
+        if (ImGui::BeginMenu("Impairment")) {
+            for (const auto& blendFile : blendFiles) {
+                // Get blend files
+                std::string fileName = fs::path(blendFile).filename().string();
+                if (ImGui::MenuItem(fileName.c_str())) {
+                    blender_input = blendFile;
+                }
+            }
+            ImGui::EndMenu();
+        }
+    }
+}
 
 // Main code
 int sdl_gui(int) {
@@ -166,21 +197,16 @@ int sdl_gui(int) {
       &show_demo_window);      // Edit bools storing our window open/close state
       ImGui::Checkbox("Another Window", &show_another_window);
       */
+
+      populateBlendFilesMenu("scene/");
+
       ImGui::SliderFloat("aperature", &f, 0.0f,
                          1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
       /*ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats
        * representing a color
        */
 
-      if (ImGui::BeginMenu("Impairment")) {
-        if (ImGui::MenuItem("testscene")) {
-          blender_input = "scene/testscene.blend";
-        }
-        if (ImGui::MenuItem("lenstest")) {
-          blender_input = "scene/lenstest.blend";
-        }
-        ImGui::EndMenu();
-      }
+
 
       bool smoothing;
       if (ImGui::Checkbox("Shade smooth", &smoothing)) {
