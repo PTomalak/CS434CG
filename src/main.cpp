@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <vector>
 #include <chrono>
+#include <sys/wait.h>
 
 int width;
 int height;
@@ -47,7 +48,38 @@ std::vector<std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float>> quads;
 
 //std::thread threads[24];
 
-void render_scene(int argc) {
+void render_scene(std::string input, int argc) {
+  //pixels.clear();
+  //pixels.resize(width, std::vector<std::array<int, 3>>(height));
+  
+  // First we must reread from blender
+  int ret1 = fork();
+  if (ret1 == -1) perror("fork");
+
+  if (ret1 == 0) {
+    execlp("bash", "bash", "scene/extract.sh", NULL);
+  }
+
+  waitpid(ret1, NULL, 0);
+
+  int ret2 = fork();
+  if (ret2 == -1) perror("fork");
+
+  if (ret2 == 0) {
+    execlp("python3", "python3", "scene/parser.py", NULL);
+  }
+
+  waitpid(ret2, NULL, 0);
+ 
+  lights.clear();
+  spheres.clear();
+  quads.clear();
+
+  if (readJSON(input)) {
+    printf("Problem reading JSON file\n");
+    return;
+  }
+
   std::thread threads[THREADS];
 
   threads[0] = std::thread(handleSDL, argc);
@@ -108,7 +140,8 @@ int main(int argc, char *argv[]) {
 
   while (main_loop) {
     sdl_gui(argc);
-    render_scene(argc);
+    render_scene(input, argc);
+    //sdl_gui(argc);
   }
 
   auto endTime = std::chrono::steady_clock::now();

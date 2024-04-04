@@ -1,3 +1,3 @@
 #!/bin/bash
-
-blender scene.blend --background --python extract.py
+echo "extract.sh"
+blender scene/scene.blend --background --python scene/extract.py

@@ -32,7 +32,7 @@ def add_quad(array, vertices, diff, spec, shininess, refractive):
     array["quads"].append(quad)
 
 
-def save_data(data, filename="blended.json"):
+def save_data(data, filename="scene/blended.json"):
     with open(filename, "w") as file:
         json.dump(data, file, indent=1)
 
@@ -90,7 +90,7 @@ result = {
 }
 
 
-objects = save_object_lines("exported_scene.obj")
+objects = save_object_lines("scene/exported_scene.obj")
 
 
 
@@ -130,3 +130,4 @@ for x in range(len(objects)):
 
 # Save the entire array into JSON
 save_data(result)
+print("parser.py");
