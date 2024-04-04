@@ -40,7 +40,7 @@ int refresh = 0;
 int smooth = 0;
 float aperature = 1.0;
 
-const int number_sensor_cells = 32; //makes sensor a 2x2 grid
+const int number_sensor_cells = 4; //makes sensor a 2x2 grid
 const float sensor_cell_width = 1.0f / 256; //each cell a 0.25x0.25 square
 glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
 

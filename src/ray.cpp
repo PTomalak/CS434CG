@@ -54,8 +54,8 @@ const float PI = 3.14159265358979323846f;
 const float fov = 150.0f;
 const float f_inf = std::numeric_limits<float>::infinity();
 const float init_refractive_idx = 1.0f;
-const int number_sensor_cells = 8; //makes sensor a 2x2 grid
-const float sensor_cell_width = 1.0f / 128; //each cell a 0.25x0.25 square
+const int number_sensor_cells = 4; //makes sensor a 2x2 grid
+const float sensor_cell_width = 1.0f / 256; //each cell a 0.25x0.25 square
 
 // Camera is so far to recreate a similar setup as on example pictures
 extern glm::vec3 camera_pos;
