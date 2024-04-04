@@ -165,7 +165,7 @@ result = {
     "ANTIALIAS": 1.0,
     "BACKGROUND": [0.0, 0.0, 0.0],
     "MAXDEPTH": 4,
-    "RESOLUTION": [400, 400],
+    "RESOLUTION": [200, 200],
     "SHADE": 0,
     "APERATURE": 1.0,
     "THREADS": 60,

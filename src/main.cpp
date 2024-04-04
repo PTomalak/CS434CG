@@ -19,7 +19,7 @@ int width;
 int height;
 int THREADS = 24; // one of those will be used for SDL
 bool main_loop = true;
-std::string blender_input = "scene/testscene.blend";
+std::string blender_input = "scene/focused.blend";
 
 
 struct Vec3 {
