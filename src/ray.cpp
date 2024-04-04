@@ -46,6 +46,7 @@ struct Light {
 
 extern vector<Light> lights;
 extern vector<tuple<Vec3, float, Vec3, Vec3, float>> spheres;
+extern std::vector<glm::vec3> sensor_cell_locs;
 extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float, vector<Vec3>>>
     quads;
 
@@ -53,9 +54,12 @@ const float PI = 3.14159265358979323846f;
 const float fov = 150.0f;
 const float f_inf = std::numeric_limits<float>::infinity();
 const float init_refractive_idx = 1.0f;
+const int number_sensor_cells = 4; //makes sensor a 2x2 grid
+const float sensor_cell_width = 1.0f / 256; //each cell a 0.25x0.25 square
 
 // Camera is so far to recreate a similar setup as on example pictures
-glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
+extern glm::vec3 camera_pos;
+
 
 float reflection_loss = 1.0f;
 
@@ -94,6 +98,51 @@ void GrammSchmidt(glm::vec3 &l, glm::vec3 &v, glm::vec3 &u) {
   l = glm::normalize(l);
   v = glm::normalize(v - glm::dot(v, l) * l);
   u = glm::cross(v, l);
+}
+
+/*std::vector<glm::vec3> GenerateSensorCellArray() {
+  std::vector<glm::vec3> sensor_cell_locs;
+  for (int i = 0; i < number_sensor_cells; i++) {
+    for (int j = 0; j < number_sensor_cells; j++) {
+      glm::vec3 loc = glm::vec3((j - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, (i - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, camera_pos.z);
+      sensor_cell_locs.push_back(loc);
+      //printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
+    }
+  }
+  return sensor_cell_locs;
+}*/
+
+std::vector<Ray> CalculateRays(int x, int y) {
+  //printf("x: %d, y: %d\n",x, y);
+  std::vector<Ray> vec;
+
+  glm::vec3 lookAt(0.0f, 0.0f, 0.0f); // Look at point
+  glm::vec3 up(0.0f, 1.0f, 0.0f);     // Up vector
+
+  float aspectRatio = float(width) / float(height);
+  float focalLength = 1.0f / tan((fov * PI / 180.0f) / 2.0f);
+
+  for (int i = 0; i < sensor_cell_locs.size(); i++) {
+    glm::vec3 cell_loc = sensor_cell_locs.at(i);
+  
+  // Calculate l, v, u vectors
+  glm::vec3 l = lookAt - camera_pos;
+  glm::vec3 v = up;
+  glm::vec3 u;
+  GrammSchmidt(l, v, u);
+
+  // Calculate ray direction
+  float px =
+      (2.0f * (x + 0.5f) / float(width) - 1.0f) * aspectRatio * focalLength;
+  float py = (1.0f - 2.0f * (y + 0.5f) / float(height)) * focalLength;
+  glm::vec3 p = camera_pos + l + px * u + py * v;
+  //printf("p: %f %f %f\n", p.x, p.y, p.z);
+  glm::vec3 direction = glm::normalize(p - cell_loc);
+
+  //printf("cell loc: %f %f %f, direction: %f %f %f\n", cell_loc.x, cell_loc.y, cell_loc.z, direction.x, direction.y, direction.z);
+  vec.push_back(Ray{cell_loc, direction});
+  }
+  return vec;
 }
 
 // Get ray from x,y pixel and setup the scene vectors
@@ -462,6 +511,28 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
   // result_color.z = glm::clamp(result_color.z, 0.0f, 1.0f);
 
   return result_color;
+}
+
+void raytrace_blur(int x, int y, int thread_num, int number_sensor_cells, float sensor_cell_width) {
+  //sensor_cell_locs = GenerateSensorCellArray();
+  //printf("TEST %d\n", thread_num);
+  std::vector<Ray> rays = CalculateRays(x, y);
+  glm::vec3 totalColor = glm::vec3(0.0f, 0.0f, 0.0f);
+  //printf("LEN: %d\n", sensor_cell_locs.size());
+  for (int i = 0; i < sensor_cell_locs.size(); i++) {
+    glm::vec3 tracedColor = Trace(rays.at(i), maxdepth, init_refractive_idx);
+    totalColor += tracedColor;
+  }
+
+  glm::vec3 color = totalColor * (1.0f / sensor_cell_locs.size());
+  
+  color *= 255;
+  // clamp colors
+  color.x = std::min(color.x, 255.0f);
+  color.y = std::min(color.y, 255.0f);
+  color.z = std::min(color.z, 255.0f);
+  pixels[x][y] = {static_cast<int>(color.x), static_cast<int>(color.y),
+                  static_cast<int>(color.z)};
 }
 
 void raytrace(int x, int y, int thread_num) {

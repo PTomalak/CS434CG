@@ -2,8 +2,8 @@
   "ANTIALIAS": 2,
   "BACKGROUND": [0.0, 0.0, 0.0],
   "MAXDEPTH": 17,
-  "RESOLUTION": [1120, 650],
-  "THREADS": 11,
+  "RESOLUTION": [480, 480],
+  "THREADS": 12,
   "lights": [
     {
       "POS": [10, 10, 100],

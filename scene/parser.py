@@ -164,7 +164,7 @@ def print_materials(materials):
 result = {
     "ANTIALIAS": 1.0,
     "BACKGROUND": [0.0, 0.0, 0.0],
-    "MAXDEPTH": 8,
+    "MAXDEPTH": 4,
     "RESOLUTION": [400, 400],
     "SHADE": 0,
     "APERATURE": 1.0,

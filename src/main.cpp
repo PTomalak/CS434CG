@@ -28,6 +28,7 @@ struct Vec3 {
 
 // Global variables
 std::vector<std::vector<std::array<int, 3>>> pixels;
+std::vector<glm::vec3> sensor_cell_locs;
 float antialias;
 float backgroundx;
 float backgroundy;
@@ -38,6 +39,10 @@ int resolutionY;
 int refresh = 0;
 int smooth = 0;
 float aperature = 1.0;
+
+const int number_sensor_cells = 4; //makes sensor a 2x2 grid
+const float sensor_cell_width = 1.0f / 256; //each cell a 0.25x0.25 square
+glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
 
 struct Light {
   Vec3 pos;
@@ -82,21 +87,21 @@ void render_scene(std::string input, int argc) {
     printf("Problem reading JSON file\n");
     return;
   }
-
+  
   std::thread threads[THREADS];
 
+  // First thread for SDL handling
   threads[0] = std::thread(handleSDL, argc);
 
   // setup threads for setting pixel colors
   for (int i = 1; i < THREADS; ++i) {
-    //std::cout << "hello\n" << std::endl;
     threads[i] = std::thread([i]() {
       int start = (height * width * (i - 1)) / (THREADS - 1);
       int end = (height * width * i) / (THREADS - 1);
       for (int p = start; p < end; ++p) {
         int x = p % width;
         int y = p / width;
-        raytrace(x, y, i);
+        raytrace_blur(x, y, i, 1, 0.0f);
       }
     });
   }
@@ -107,6 +112,18 @@ void render_scene(std::string input, int argc) {
 
 }
 
+std::vector<glm::vec3> GenerateSensorCellArray() {
+  std::vector<glm::vec3> sensor_cell_locs;
+  for (int i = 0; i < number_sensor_cells; i++) {
+    for (int j = 0; j < number_sensor_cells; j++) {
+      glm::vec3 loc = glm::vec3((j - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, (i - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, camera_pos.z);
+      sensor_cell_locs.push_back(loc);
+      //printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
+    }
+  }
+  return sensor_cell_locs;
+}
+
 int main(int argc, char *argv[]) {
   // Making sure output is as expected
   if (argc < 3) {
@@ -114,6 +131,7 @@ int main(int argc, char *argv[]) {
               << " <savename>" << std::endl;
     return 1;
   }
+
 
   // Handle JSON
   std::string input = argv[1];
@@ -125,6 +143,7 @@ int main(int argc, char *argv[]) {
   width = resolutionX * antialias;
   height = resolutionY * antialias;
 
+  sensor_cell_locs = GenerateSensorCellArray();
   auto startTime = std::chrono::steady_clock::now();
 
   // for debug prints uncomment:
