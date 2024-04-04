@@ -135,13 +135,11 @@ int main(int argc, char *argv[]) {
   // Resize pixels
   pixels.resize(width, std::vector<std::array<int, 3>>(height));
 
-  // Create threads
-  //std::thread threads[THREADS];
-
+  // This sucks but is a solution to imgui not being thread safe
   while (main_loop) {
     sdl_gui(argc);
-    render_scene(input, argc);
-    //sdl_gui(argc);
+    if (main_loop) 
+      render_scene(input, argc);
   }
 
   auto endTime = std::chrono::steady_clock::now();
