@@ -23,7 +23,7 @@ struct Light {
 
 extern vector<Light> lights;
 extern vector<tuple<Vec3, float, Vec3, Vec3, float>> spheres;
-extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float>> quads;
+extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float, vector<Vec3>>> quads;
 
 int readJSON(std::string filename) {
   // Read the JSON file
@@ -75,10 +75,16 @@ int readJSON(std::string filename) {
   // Read quads
   for (const auto &quad : document["quads"].GetArray()) {
     vector<Vec3> vertices;
+    vector<Vec3> normals;
     for (const auto &vertex : quad["vertices"].GetArray()) {
       Vec3 v = {vertex[0].GetFloat(), vertex[1].GetFloat(),
                 vertex[2].GetFloat()};
       vertices.push_back(v);
+    }
+    for (const auto &vertex : quad["normals"].GetArray()) {
+      Vec3 vn = {vertex[0].GetFloat(), vertex[1].GetFloat(),
+                vertex[2].GetFloat()};
+      normals.push_back(vn);
     }
     Vec3 diff = {quad["DIFF"][0].GetFloat(), quad["DIFF"][1].GetFloat(),
                  quad["DIFF"][2].GetFloat()};
@@ -86,7 +92,7 @@ int readJSON(std::string filename) {
                  quad["SPEC"][2].GetFloat()};
     float shininess = quad["SHININESS"].GetFloat();
     float refractive = quad["REFRACTIVE"].GetFloat();
-    quads.push_back(make_tuple(vertices, diff, spec, shininess, refractive));
+    quads.push_back(make_tuple(vertices, diff, spec, shininess, refractive, normals));
   }
   return 0;
 }
