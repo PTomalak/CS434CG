@@ -43,7 +43,7 @@ struct Light {
 
 extern vector<Light> lights;
 extern vector<tuple<Vec3, float, Vec3, Vec3, float>> spheres;
-extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float>> quads;
+extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float, vector<Vec3>>> quads;
 
 const float PI = 3.14159265358979323846f;
 const float fov = 150.0f;

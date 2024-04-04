@@ -41,7 +41,7 @@ struct Light {
 
 std::vector<Light> lights;
 std::vector<std::tuple<Vec3, float, Vec3, Vec3, float>> spheres;
-std::vector<std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float>> quads;
+std::vector<std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float, std::vector<Vec3>>> quads;
 
 int main(int argc, char *argv[]) {
   // Making sure output is as expected
