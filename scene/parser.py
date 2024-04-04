@@ -35,7 +35,7 @@ def add_quad(array, vertices, normals, diff, spec, shininess, refractive):
     array["quads"].append(quad)
 
 
-def save_data(data, filename="blended.json"):
+def save_data(data, filename="scene/blended.json"):
     with open(filename, "w") as file:
         json.dump(data, file, indent=1)
 
@@ -45,7 +45,7 @@ def save_object_lines():
     current_object = None
     count = 1
 
-    with open("exported_scene.obj", "r") as obj_file:
+    with open("scene/exported_scene.obj", "r") as obj_file:
         lines = obj_file.readlines()
         
 
@@ -99,7 +99,7 @@ def get_materials():
     materials = []
     current_material = None
     
-    with open("exported_scene.mtl", "r") as mtl_file:
+    with open("scene/exported_scene.mtl", "r") as mtl_file:
         lines = mtl_file.readlines()
 
         for line in lines:
@@ -158,7 +158,7 @@ result = {
     "ANTIALIAS": 1.0,
     "BACKGROUND": [0.0, 0.0, 0.0],
     "MAXDEPTH": 8,
-    "RESOLUTION": [400, 400],
+    "RESOLUTION": [200, 200],
     "THREADS": 60,
     "lights": [{"POS": [0, 0, -900], "DIFF": [0.5, 0.5, 0.5], "SPEC": [0.3, 0.3, 0.3]}],
     "spheres": [],
@@ -170,6 +170,7 @@ objects = save_object_lines()
 materials = get_materials()
 
 print_materials(materials)
+
 
 if (len(materials) < 1):
     print("Assign materials! Exiting...")

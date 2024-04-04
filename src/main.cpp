@@ -3,6 +3,8 @@
 #include "json_helper.h"
 #include "ray.h"
 #include "sdl_thread.h"
+#include "sdl_gui.h"
+
 #include <array>
 #include <fstream>
 #include <iostream>
@@ -11,11 +13,12 @@
 #include <unistd.h>
 #include <vector>
 #include <chrono>
+#include <sys/wait.h>
 
 int width;
 int height;
 int THREADS = 24; // one of those will be used for SDL
-
+bool main_loop = true;
 
 
 struct Vec3 {
@@ -42,6 +45,64 @@ struct Light {
 std::vector<Light> lights;
 std::vector<std::tuple<Vec3, float, Vec3, Vec3, float>> spheres;
 std::vector<std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float>> quads;
+
+//std::thread threads[24];
+
+void render_scene(std::string input, int argc) {
+  //pixels.clear();
+  //pixels.resize(width, std::vector<std::array<int, 3>>(height));
+  
+  // First we must reread from blender
+  int ret1 = fork();
+  if (ret1 == -1) perror("fork");
+
+  if (ret1 == 0) {
+    execlp("bash", "bash", "scene/extract.sh", NULL);
+  }
+
+  waitpid(ret1, NULL, 0);
+
+  int ret2 = fork();
+  if (ret2 == -1) perror("fork");
+
+  if (ret2 == 0) {
+    execlp("python3", "python3", "scene/parser.py", NULL);
+  }
+
+  waitpid(ret2, NULL, 0);
+ 
+  lights.clear();
+  spheres.clear();
+  quads.clear();
+
+  if (readJSON(input)) {
+    printf("Problem reading JSON file\n");
+    return;
+  }
+
+  std::thread threads[THREADS];
+
+  threads[0] = std::thread(handleSDL, argc);
+
+  // setup threads for setting pixel colors
+  for (int i = 1; i < THREADS; ++i) {
+    //std::cout << "hello\n" << std::endl;
+    threads[i] = std::thread([i]() {
+      int start = (height * width * (i - 1)) / (THREADS - 1);
+      int end = (height * width * i) / (THREADS - 1);
+      for (int p = start; p < end; ++p) {
+        int x = p % width;
+        int y = p / width;
+        raytrace(x, y, i);
+      }
+    });
+  }
+
+  for (int i = 0; i < THREADS; ++i) {
+    threads[i].join();
+  }
+
+}
 
 int main(int argc, char *argv[]) {
   // Making sure output is as expected
@@ -74,30 +135,13 @@ int main(int argc, char *argv[]) {
   // Resize pixels
   pixels.resize(width, std::vector<std::array<int, 3>>(height));
 
-  // Create threads
-  std::thread threads[THREADS];
-
-  // First thread for SDL handling
-  threads[0] = std::thread(handleSDL, argc);
-
-  // setup threads for setting pixel colors
-  for (int i = 1; i < THREADS; ++i) {
-    threads[i] = std::thread([i]() {
-      int start = (height * width * (i - 1)) / (THREADS - 1);
-      int end = (height * width * i) / (THREADS - 1);
-      for (int p = start; p < end; ++p) {
-        int x = p % width;
-        int y = p / width;
-        raytrace(x, y, i);
-      }
-    });
+  // This sucks but is a solution to imgui not being thread safe
+  while (main_loop) {
+    sdl_gui(argc);
+    if (main_loop) 
+      render_scene(input, argc);
   }
 
-  // Join threads
-  for (int i = 0; i < THREADS; ++i) {
-    threads[i].join();
-  }
-  
   auto endTime = std::chrono::steady_clock::now();
   auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
   int totalPixels = width * height;

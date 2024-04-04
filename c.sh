@@ -6,10 +6,10 @@ res=$?
 chmod +x ./exe/ray
 
 # setup scene
-cd scene
-bash extract.sh testscene.blend
-python3 parser.py
-cd ..
+# cd scene
+bash scene/extract.sh scene/testscene.blend
+python3 scene/parser.py
+# cd ..
 
 # colorize log
 # https://github.com/cornet/ccze

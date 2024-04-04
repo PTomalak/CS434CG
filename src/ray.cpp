@@ -412,4 +412,5 @@ void raytrace(int x, int y, int thread_num) {
   color.z = std::min(color.z, 255.0f);
   pixels[x][y] = {static_cast<int>(color.x), static_cast<int>(color.y),
                   static_cast<int>(color.z)};
+  return;
 }
