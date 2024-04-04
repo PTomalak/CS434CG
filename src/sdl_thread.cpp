@@ -4,8 +4,6 @@ extern int refresh;
 
 // Function to handle SDL
 void handleSDL(int argc) {
-  return;
-  /*
   if (argc <= 3) {
     return;
   }
@@ -14,7 +12,7 @@ void handleSDL(int argc) {
 
   // Initialize SDL
   SDL_Init(SDL_INIT_VIDEO);
-  window = SDL_CreateWindow("Raytracing", 4000, SDL_WINDOWPOS_UNDEFINED, width,
+  window = SDL_CreateWindow("Raytracing", 4000, SDL_WINDOWPOS_CENTERED, width,
                             height, SDL_WINDOW_SHOWN);
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -57,5 +55,4 @@ void handleSDL(int argc) {
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
-  */
 }

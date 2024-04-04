@@ -1,9 +1,15 @@
 #!/bin/bash
 mkdir -p ./log
 #make clean > /dev/null 2>&1
-make all > ./log/cxx_clean.log 2>&1
+make -j 32 all > ./log/cxx_clean.log 2>&1
 res=$?
 chmod +x ./exe/ray
+
+# setup scene
+# cd scene
+bash scene/extract.sh scene/testscene.blend
+python3 scene/parser.py
+# cd ..
 
 # colorize log
 # https://github.com/cornet/ccze

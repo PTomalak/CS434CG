@@ -35,6 +35,9 @@ extern int maxdepth;
 extern int resolutionX;
 extern int resolutionY;
 
+extern int smooth;
+extern float aperature;
+
 struct Light {
   Vec3 pos;
   Vec3 diff;
@@ -43,8 +46,9 @@ struct Light {
 
 extern vector<Light> lights;
 extern vector<tuple<Vec3, float, Vec3, Vec3, float>> spheres;
-extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float>> quads;
 extern std::vector<glm::vec3> sensor_cell_locs;
+extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float, vector<Vec3>>>
+    quads;
 
 const float PI = 3.14159265358979323846f;
 const float fov = 150.0f;
@@ -61,7 +65,8 @@ float reflection_loss = 1.0f;
 
 // Snell's Law, returns refracted vector
 glm::vec3 Refraction(float n1, float n2, P p, Ray r) {
-  // The following formula is taken from "Reflections and Refractions in Ray Tracing" by Bram de Greve 
+  // The following formula is taken from "Reflections and Refractions in Ray
+  // Tracing" by Bram de Greve
   // https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
   float n = n1 / n2;
   float cosI = glm::abs(glm::dot(p.normal, r.direction));
@@ -78,9 +83,9 @@ glm::vec3 Refraction(float n1, float n2, P p, Ray r) {
   // float cosi = glm::clamp(-1.f, 1.f, glm::dot(r.direction, p.normal));
   // float etai = n1, etat = n2;
   // glm::vec3 n = p.normal;
-  // if (cosi < 0) { cosi = -cosi; } else { std::swap(etai, etat); n = -1.f * p.normal; }
-  // float eta = etai / etat;
-  // float k = 1 - eta * eta * (1 - cosi * cosi);
+  // if (cosi < 0) { cosi = -cosi; } else { std::swap(etai, etat); n = -1.f *
+  // p.normal; } float eta = etai / etat; float k = 1 - eta * eta * (1 - cosi *
+  // cosi);
   // //return k < 0 ? 0 : eta * I + (eta * cosi - sqrtf(k)) * n;
 
   // if (k < 0)
@@ -249,6 +254,35 @@ float ray_intersects_triangle(glm::vec3 ray_origin, glm::vec3 ray_vector,
   }
 }
 
+glm::vec3 weightedAverageNormal(const glm::vec3& intersectionPoint,
+                                const glm::vec3& vertex1,
+                                const glm::vec3& vertex2,
+                                const glm::vec3& vertex3,
+                                const glm::vec3& normal1,
+                                const glm::vec3& normal2,
+                                const glm::vec3& normal3) {
+    float d1 = glm::length(vertex1 - intersectionPoint);
+    float d2 = glm::length(vertex2 - intersectionPoint);
+    float d3 = glm::length(vertex3 - intersectionPoint);
+    
+    float totalDistance = d1 + d2 + d3;
+
+    // Calculate weights based on distance
+    float w1 = d1 / totalDistance;
+    float w2 = d2 / totalDistance;
+    float w3 = d3 / totalDistance;
+
+    w1 = 1/w1;
+    w2 = 1/w2;
+    w3 = 1/w3;
+
+    // Weighted sum of normals
+    glm::vec3 weightedNormal = w1 * normal1 + w2 * normal2 + w3 * normal3;
+    
+    // Normalize
+    return glm::normalize(weightedNormal);
+}
+
 // Function to trace the ray and determine if it intersects any spheres or
 // trigs
 // mode: 0 - don't ignore refractive / transparent objects
@@ -288,13 +322,18 @@ P FirstIntersection(Ray ray, int mode) {
     }
   }
 
+
+
   // Check for triangle intersections
   for (const auto &quad : quads) {
     std::vector<Vec3> vertices = std::get<0>(quad);
+    std::vector<Vec3> vns = std::get<5>(quad);
 
     // Split the quad into two trigs: (0, 1, 2) and (0, 1, 3)
     std::vector<Vec3> vertices1 = {vertices[0], vertices[1], vertices[2]};
     std::vector<Vec3> vertices2 = {vertices[1], vertices[2], vertices[3]};
+    std::vector<Vec3> vns1 = {vns[0], vns[1], vns[2]};
+    std::vector<Vec3> vns2 = {vns[1], vns[2], vns[3]};
 
     distance = ray_intersects_triangle(ray.origin, ray.direction, vertices1,
                                        intersectionPoint);
@@ -304,18 +343,29 @@ P FirstIntersection(Ray ray, int mode) {
       Vec3 spec = get<2>(quad);
       float shininess = get<3>(quad);
       float refractive = get<4>(quad);
-      if (refractive > 0.0f && mode == 1) continue;
+      if (refractive > 0.0f && mode == 1)
+        continue;
       result.diff = glm::vec3(diff.x, diff.y, diff.z);
       result.spec = glm::vec3(spec.x, spec.y, spec.z);
       result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
                              intersectionPoint.z);
-      normal = glm::cross(glm::vec3(vertices1[1].x - vertices1[0].x,
-                                    vertices1[1].y - vertices1[0].y,
-                                    vertices1[1].z - vertices1[0].z),
-                          glm::vec3(vertices1[2].x - vertices1[0].x,
-                                    vertices1[2].y - vertices1[0].y,
-                                    vertices1[2].z - vertices1[0].z));
-      normal = glm::normalize(-normal); // oops, I needed to flip normals
+      if (smooth) {
+        glm::vec3 normal1 = glm::vec3(vns1[0].x, vns1[0].y, vns1[0].z);
+        glm::vec3 normal2 = glm::vec3(vns1[1].x, vns1[1].y, vns1[1].z);
+        glm::vec3 normal3 = glm::vec3(vns1[2].x, vns1[2].y, vns1[2].z);
+        glm::vec3 vert1 = glm::vec3(vertices1[0].x, vertices1[0].y, vertices1[0].z);
+        glm::vec3 vert2 = glm::vec3(vertices1[1].x, vertices1[1].y, vertices1[1].z);
+        glm::vec3 vert3 = glm::vec3(vertices1[2].x, vertices1[2].y, vertices1[2].z);
+        normal = weightedAverageNormal(intersectionPoint, vert1, vert2, vert3, normal1, normal2, normal3);
+      } else {
+        normal = glm::cross(glm::vec3(vertices1[1].x - vertices1[0].x,
+                                      vertices1[1].y - vertices1[0].y,
+                                      vertices1[1].z - vertices1[0].z),
+                            glm::vec3(vertices1[2].x - vertices1[0].x,
+                                      vertices1[2].y - vertices1[0].y,
+                                      vertices1[2].z - vertices1[0].z));
+        normal = glm::normalize(-normal); // oops, I needed to flip normals
+      }
       result.normal = glm::vec3(normal.x, normal.y, normal.z);
       closest = distance;
       result.shine = shininess;
@@ -330,18 +380,30 @@ P FirstIntersection(Ray ray, int mode) {
       Vec3 spec = get<2>(quad);
       float shininess = get<3>(quad);
       float refractive = get<4>(quad);
-      if (refractive > 0.0f && mode == 1) continue;
+      if (refractive > 0.0f && mode == 1)
+        continue;
       result.diff = glm::vec3(diff.x, diff.y, diff.z);
       result.spec = glm::vec3(spec.x, spec.y, spec.z);
       result.loc = glm::vec3(intersectionPoint.x, intersectionPoint.y,
                              intersectionPoint.z);
-      normal = glm::cross(glm::vec3(vertices2[1].x - vertices2[0].x,
-                                    vertices2[1].y - vertices2[0].y,
-                                    vertices2[1].z - vertices2[0].z),
-                          glm::vec3(vertices2[2].x - vertices2[0].x,
-                                    vertices2[2].y - vertices2[0].y,
-                                    vertices2[2].z - vertices2[0].z));
-      normal = glm::normalize(normal);
+      if (smooth) {
+        glm::vec3 normal1 = glm::vec3(vns2[0].x, vns2[0].y, vns2[0].z);
+        glm::vec3 normal2 = glm::vec3(vns2[1].x, vns2[1].y, vns2[1].z);
+        glm::vec3 normal3 = glm::vec3(vns2[2].x, vns2[2].y, vns2[2].z);
+        glm::vec3 vert1 = glm::vec3(vertices2[0].x, vertices2[0].y, vertices2[0].z);
+        glm::vec3 vert2 = glm::vec3(vertices2[1].x, vertices2[1].y, vertices2[1].z);
+        glm::vec3 vert3 = glm::vec3(vertices2[2].x, vertices2[2].y, vertices2[2].z);
+        normal = weightedAverageNormal(intersectionPoint, vert1, vert2, vert3, normal1, normal2, normal3);
+      } else {
+        normal = glm::cross(glm::vec3(vertices2[1].x - vertices2[0].x,
+                                      vertices2[1].y - vertices2[0].y,
+                                      vertices2[1].z - vertices2[0].z),
+                            glm::vec3(vertices2[2].x - vertices2[0].x,
+                                      vertices2[2].y - vertices2[0].y,
+                                      vertices2[2].z - vertices2[0].z));
+        normal = glm::normalize(normal);
+      }
+
       result.normal = glm::vec3(normal.x, normal.y, normal.z);
       closest = distance;
       result.shine = shininess;
@@ -389,7 +451,6 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
   glm::vec3 result_color = {0.0f, 0.0f, 0.0f};
   P p = FirstIntersection(ray, 0);
 
-
   // this is for black-white depth debugging
   float start = 640.0f;
   float end = 1000.0f;
@@ -425,20 +486,22 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
     // result_color.z = glm::clamp(result_color.z, 0.0f, 1.0f);
     return result_color;
   }
+
   // setup reflected ray
   Ray reflected;
   reflected.direction = glm::normalize(glm::reflect(ray.direction, p.normal));
   reflected.origin = p.loc + 0.1f * reflected.direction;
-  glm::vec3 traced = Trace(reflected, depth - 1, refractive_idx);
+  glm::vec3 traced = 0.04f * Trace(reflected, depth - 1, refractive_idx); // add
 
   // setup refracted ray, if applicable
   if (p.refractive_idx > 0.0f) {
     Ray refracted;
-    refracted.direction = glm::normalize(Refraction(refractive_idx, p.refractive_idx, p, ray));
+    refracted.direction =
+        glm::normalize(Refraction(refractive_idx, p.refractive_idx, p, ray));
     refracted.origin = p.loc + 0.01f * refracted.direction;
     glm::vec3 refracted_trace = Trace(refracted, depth - 1, p.refractive_idx);
     // Add this to the reflected ray result
-    traced += refracted_trace;
+    traced += 0.94f * refracted_trace;
   }
   // float light_factor = (1.0f / pow((float)(maxdepth-depth+ 1), 2));
   // traced = traced *  light_factor;
@@ -482,4 +545,5 @@ void raytrace(int x, int y, int thread_num) {
   color.z = std::min(color.z, 255.0f);
   pixels[x][y] = {static_cast<int>(color.x), static_cast<int>(color.y),
                   static_cast<int>(color.z)};
+  return;
 }

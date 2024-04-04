@@ -2,7 +2,7 @@
 CXX = g++-13
 
 # Flags
-CXXFLAGS = -Wno-error=missing-field-initializers -I$(INC_DIR) -I$(MAC_DIR1) -I$(MAC_DIR2) -g -march=native
+CXXFLAGS = -fopenmp -Wno-error=missing-field-initializers -lSDL2 -lSDL2main -I/usr/include/SDL2 -lm -I$(INC_DIR) -O3 -g -march=native
 
 # Directories
 SRC_DIR = ./src
@@ -13,7 +13,7 @@ OBJ_DIR = ./obj
 EXE_DIR = ./exe
 
 # Files
-SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+SOURCES = $(wildcard $(SRC_DIR)/*.cpp) $(wildcard imgui/*.cpp)
 HEADERS = $(wildcard $(INC_DIR)/*.h)
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 EXECUTABLE = $(EXE_DIR)/ray

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /CS434CG/
+bash c.sh ./scene/blended.json ./blended.bmp 1

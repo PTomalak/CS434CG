@@ -37,3 +37,7 @@
 - quit the window with `q`
 - refresh the window with `r`, can also modify input file in the meantime
 
+
+
+### Misc / TODOs
+- swap `-g` flag back to `-O3` in Makefile
