@@ -38,7 +38,8 @@ int resolutionX;
 int resolutionY;
 int refresh = 0;
 int smooth = 0;
-float aperature = 1.0;
+float aperature = 0.03f;
+int sensors = 4;
 
 const int number_sensor_cells = 4; //makes sensor a 2x2 grid
 const float sensor_cell_width = 1.0f / 256; //each cell a 0.25x0.25 square

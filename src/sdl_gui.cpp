@@ -31,6 +31,7 @@ extern bool main_loop;
 extern std::string blender_input;
 extern int smooth;
 extern float aperature;
+extern int sensors;
 
 
 namespace fs = std::filesystem;
@@ -186,7 +187,8 @@ int sdl_gui(int) {
     {
       static int counter = 0;
 
-      static float f = 0.0f;
+      static float f = 0.03f;
+      static int l = 4;
       // static int counter = 0;
 
       // ImGui::Begin("Hello, world!");                          // Create a
@@ -201,11 +203,12 @@ int sdl_gui(int) {
       populateBlendFilesMenu("scene/");
 
       ImGui::SliderFloat("aperature", &f, 0.0f,
-                         1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+                         0.1f); // Edit 1 float using a slider from 0.0f to 1.0f
       /*ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats
        * representing a color
        */
 
+      ImGui::SliderInt("sensor size", &l, 1, 16);
 
 
       bool smoothing;
@@ -218,6 +221,7 @@ int sdl_gui(int) {
         render = true;
         counter++;
         aperature = f;
+        counter = l;
         break;
         // break;
       }
