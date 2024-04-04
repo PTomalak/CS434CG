@@ -80,8 +80,8 @@ def save_object_lines():
                     current_object["vn"].append(
                         norm_values
                     )  # Save normal values as list of integers
-                    print(face_values)
-                    print(norm_values)
+                    #print(face_values)
+                    #print(norm_values)
                 elif line.startswith("usemtl"):
                     mat_name = line[7:]
                     current_object["usemtl"].append(mat_name)
