@@ -106,10 +106,12 @@ int sdl_gui(int)
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT)
+            if (event.type == SDL_QUIT) 
                 done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window)) {
+                main_loop = false;
                 done = true;
+            }
         }
 
         // Start the Dear ImGui frame
@@ -142,6 +144,7 @@ int sdl_gui(int)
 		//render_scene(3);
                 render = true;
 		counter++;
+		break;
 		//break;
 	    }
             ImGui::SameLine();
@@ -165,14 +168,6 @@ int sdl_gui(int)
                 show_another_window = false;
             ImGui::End();
         }
-	if (render) 
-	{
-	    //render_scene(3);
-	    //std::thread thr = std::thread(render_scene, 3);
-	    //thr.join();
-	    render = false;
-	    break;
-	}
 
         // Rendering
         ImGui::Render();
