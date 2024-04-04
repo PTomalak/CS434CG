@@ -23,7 +23,7 @@ RUN mkdir -p /CS434CG
 
 COPY ./blender /blender
 
-RUN pacman -U "https://alaa.ad24.cz/packages/o/opensubdiv/opensubdiv-3.5.0-1-aarch64.pkg.tar.xz" --noconfirm
+RUN pacman -U "http://tardis.tiny-vps.com/aarm/packages/o/opensubdiv/opensubdiv-3.5.0-1-aarch64.pkg.tar.xz" --noconfirm
 
 RUN pacman -U /blender/* --noconfirm
 
