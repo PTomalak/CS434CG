@@ -37,7 +37,7 @@ int resolutionX;
 int resolutionY;
 int refresh = 0;
 int smooth = 0;
-int aperature = 1.0;
+float aperature = 1.0;
 
 struct Light {
   Vec3 pos;

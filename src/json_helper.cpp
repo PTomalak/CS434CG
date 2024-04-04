@@ -15,7 +15,7 @@ extern int resolutionX;
 extern int resolutionY;
 extern int THREADS;
 extern int smooth;
-extern int aperature;
+extern float aperature;
 
 struct Light {
   Vec3 pos;
@@ -48,8 +48,8 @@ int readJSON(std::string filename) {
   maxdepth = document["MAXDEPTH"].GetInt();
   resolutionX = document["RESOLUTION"][0].GetInt();
   resolutionY = document["RESOLUTION"][1].GetInt();
-  smooth = document["SHADE"].GetInt();
-  aperature = document["APERATURE"].GetFloat();
+  //smooth = document["SHADE"].GetInt();
+  //aperature = document["APERATURE"].GetFloat();
   THREADS = document["THREADS"].GetInt();
 
   // Read lights

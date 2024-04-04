@@ -36,7 +36,7 @@ extern int resolutionX;
 extern int resolutionY;
 
 extern int smooth;
-extern int aperature;
+extern float aperature;
 
 struct Light {
   Vec3 pos;
