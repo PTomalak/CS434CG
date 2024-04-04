@@ -57,7 +57,7 @@ void render_scene(std::string input, int argc) {
   if (ret1 == -1) perror("fork");
 
   if (ret1 == 0) {
-    execlp("bash", "bash", "scene/extract.sh", NULL);
+    execlp("bash", "bash", "scene/extract.sh", "scene/testscene.blend");
   }
 
   waitpid(ret1, NULL, 0);
