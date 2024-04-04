@@ -1,5 +1,5 @@
 # Compiler
-CXX = g++-13
+CXX = g++
 
 # Flags
 CXXFLAGS = -fopenmp -Wno-error=missing-field-initializers -lSDL2 -lSDL2main -I/usr/include/SDL2 -lm -I$(INC_DIR) -O3 -g -march=native
