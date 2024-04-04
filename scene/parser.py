@@ -21,9 +21,12 @@ import json
 """
 # https://www.loc.gov/preservation/digital/formats/fdd/fdd000508.shtml
 
-def add_quad(array, vertices, diff, spec, shininess, refractive):
+norm_arr = []
+
+def add_quad(array, vertices, normals, diff, spec, shininess, refractive):
     quad = {
         "vertices": vertices,
+        "normals": normals,
         "DIFF": diff,
         "SPEC": spec,
         "SHININESS": shininess,
@@ -44,6 +47,7 @@ def save_object_lines():
 
     with open("exported_scene.obj", "r") as obj_file:
         lines = obj_file.readlines()
+        
 
         for line in lines:
             line = line.strip()
@@ -53,7 +57,7 @@ def save_object_lines():
                 if current_object is not None:
                     objects.append(current_object)  # Append object
                     count += len(current_object["v"])
-                current_object = {"Name": [], "v": [], "f": [], "usemtl": []}  # Prepare for new object
+                current_object = {"Name": [], "v": [], "f": [], "usemtl": [], "vn": []}  # Prepare for new object
                 name = line[2:]
                 current_object["Name"].append(name)
 
@@ -69,12 +73,21 @@ def save_object_lines():
                     face_values = [
                         int(index.split("/")[0])-count for index in line[2:].split()
                     ]
+                    norm_values = [
+                        int(index.split("/")[1])-count for index in line[2:].split()
+                    ]
                     current_object["f"].append(
                         face_values
                     )  # Save face values as list of integers
+                    current_object["vn"].append(
+                        norm_values
+                    )  # Save normal values as list of integers
                 elif line.startswith("usemtl"):
                     mat_name = line[7:]
                     current_object["usemtl"].append(mat_name)
+                elif line.startswith("vn "):
+                    normal_values = [float(value) for value in line[2:].split()]
+                    norm_arr.append(normal_values)
 
         # append last
         if current_object is not None:
@@ -145,7 +158,7 @@ result = {
     "ANTIALIAS": 1.0,
     "BACKGROUND": [0.0, 0.0, 0.0],
     "MAXDEPTH": 8,
-    "RESOLUTION": [1200, 1200],
+    "RESOLUTION": [400, 400],
     "THREADS": 60,
     "lights": [{"POS": [0, 0, -900], "DIFF": [0.5, 0.5, 0.5], "SPEC": [0.3, 0.3, 0.3]}],
     "spheres": [],
@@ -158,48 +171,68 @@ materials = get_materials()
 
 print_materials(materials)
 
+if (len(materials) < 1):
+    print("Assign materials! Exiting...")
+else:
 
 
-for x in range(len(objects)):
-    print("loading object", objects[x]["Name"][0], "with material", objects[x]["usemtl"][0])
-    mat = None
-    index = 0
-    while (mat == None):
-        if (objects[x]["usemtl"][0] == materials[index]["Name"][0]) :
-            mat = materials[index]
-        else:
+
+    for x in range(len(objects)):
+        print("loading object", objects[x]["Name"][0], "with material", objects[x]["usemtl"][0])
+        mat = None
+        index = 0
+        while (mat == None):
+            if (objects[x]["usemtl"][0] == materials[index]["Name"][0]) :
+                mat = materials[index]
+            else:
+                index += 1
+        
+        index = 0
+        for face in objects[x]["f"]:
+            if (len(face) == 4):
+                add_quad(
+                    result,
+                    vertices=[
+                        objects[x]["v"][face[2]],
+                        objects[x]["v"][face[3]],
+                        objects[x]["v"][face[1]],
+                        objects[x]["v"][face[0]],
+                    ],
+                    normals=[
+                        norm_arr[objects[x]["vn"][index][2]],
+                        norm_arr[objects[x]["vn"][index][3]],
+                        norm_arr[objects[x]["vn"][index][1]],
+                        norm_arr[objects[x]["vn"][index][0]]
+                    ],
+                    diff=mat["Kd"],
+                    spec=mat["Ks"],
+                    shininess=mat["Ns"][0],
+                    refractive=-mat["d"],
+                )
+            elif (len(face) == 3):
+                add_quad(
+                    result,
+                    vertices=[
+                        objects[x]["v"][face[2]],
+                        objects[x]["v"][face[2]],
+                        objects[x]["v"][face[1]],
+                        objects[x]["v"][face[0]],
+                    ],
+                    normals=[
+                        norm_arr[objects[x]["vn"][index][2]],
+                        norm_arr[objects[x]["vn"][index][2]],
+                        norm_arr[objects[x]["vn"][index][1]],
+                        norm_arr[objects[x]["vn"][index][0]]
+                    ],
+                    diff=mat["Kd"],
+                    spec=mat["Ks"],
+                    shininess=mat["Ns"][0],
+                    refractive=-mat["d"],
+                )
+            else:
+                print("Note: we render only trigs and quads")
             index += 1
 
-    for face in objects[x]["f"]:
-        if (len(face) == 4):
-            add_quad(
-                result,
-                vertices=[
-                    objects[x]["v"][face[2]],
-                    objects[x]["v"][face[3]],
-                    objects[x]["v"][face[1]],
-                    objects[x]["v"][face[0]],
-                ],
-                diff=mat["Kd"],
-                spec=mat["Ks"],
-                shininess=mat["Ns"][0],
-                refractive=-mat["d"],
-            )
-        if (len(face) == 3):
-            add_quad(
-                result,
-                vertices=[
-                    objects[x]["v"][face[2]],
-                    objects[x]["v"][face[2]],
-                    objects[x]["v"][face[1]],
-                    objects[x]["v"][face[0]],
-                ],
-                diff=mat["Kd"],
-                spec=mat["Ks"],
-                shininess=mat["Ns"][0],
-                refractive=-mat["d"],
-            )
 
-
-# Save the entire array into JSON
-save_data(result)
+    # Save the entire array into JSON
+    save_data(result)
