@@ -7,7 +7,7 @@ chmod +x ./exe/ray
 
 # setup scene
 # cd scene
-bash scene/extract.sh scene/testscene.blend
+bash scene/extract.sh scene/lenstest.blend
 python3 scene/parser.py
 # cd ..
 

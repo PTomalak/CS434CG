@@ -73,15 +73,15 @@ def save_object_lines():
                     face_values = [
                         int(index.split("/")[0])-count for index in line[2:].split()
                     ]
-                    norm_values = [
-                        int(index.split("/")[1])-count for index in line[2:].split()
-                    ]
+                    norm_values = face_values
                     current_object["f"].append(
                         face_values
                     )  # Save face values as list of integers
                     current_object["vn"].append(
                         norm_values
                     )  # Save normal values as list of integers
+                    print(face_values)
+                    print(norm_values)
                 elif line.startswith("usemtl"):
                     mat_name = line[7:]
                     current_object["usemtl"].append(mat_name)
