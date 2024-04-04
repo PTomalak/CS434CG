@@ -166,7 +166,7 @@ result = {
     "BACKGROUND": [0.0, 0.0, 0.0],
     "MAXDEPTH": 8,
     "RESOLUTION": [400, 400],
-    "SHADE": 1,
+    "SHADE": 0,
     "APERATURE": 1.0,
     "THREADS": 60,
     "lights": [{"POS": [0, 0, -900], "DIFF": [0.5, 0.5, 0.5], "SPEC": [0.3, 0.3, 0.3]}],
