@@ -149,6 +149,9 @@ int sdl_gui(int)
 		if (ImGui::MenuItem("lenstest")) {
 		   blender_input = "scene/lenstest.blend";
 		}
+		if (ImGui::MenuItem("lens1")) {
+		   blender_input = "scene/lens1.blend";
+		}
 	        ImGui::EndMenu();
 	    }
 

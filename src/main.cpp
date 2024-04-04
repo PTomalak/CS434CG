@@ -19,7 +19,7 @@ int width;
 int height;
 int THREADS = 24; // one of those will be used for SDL
 bool main_loop = true;
-std::string blender_input = "scene/testscene.blend";
+std::string blender_input = "scene/lens1.blend";
 
 
 struct Vec3 {
@@ -50,8 +50,17 @@ std::vector<std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float, std::vector<
 //std::thread threads[24];
 
 void render_scene(std::string input, int argc) {
-  //pixels.clear();
-  //pixels.resize(width, std::vector<std::array<int, 3>>(height));
+  pixels.clear();
+  pixels.resize(width, std::vector<std::array<int, 3>>(height));
+
+  int ret = fork();
+  if (ret == -1) perror("fork");
+
+  if (ret == 0) {
+    execlp("bash", "bash", "scene/test.sh", blender_input.c_str());
+  }
+
+  waitpid(ret, NULL, 0);
   
   // First we must reread from blender
   int ret1 = fork();
