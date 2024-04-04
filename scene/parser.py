@@ -1,4 +1,5 @@
 import json
+import re
 
 """
 
@@ -71,15 +72,21 @@ def save_object_lines():
                     )  # Save vertex values as list of floats
                 elif line.startswith("f "):
                     face_values = [
-                        int(index.split("/")[0])-count for index in line[2:].split()
+                        int(index.split("//")[0]) - count if "//" in index else int(index.split("/")[0]) - count
+                        for index in line[2:].split()
+                        ]
+
+                    norm_values = [
+                        int(index.split("//")[1]) -1 if "//" in index else int(index.split("/")[2]) -1
+                        for index in line[2:].split()
                     ]
-                    norm_values = face_values
                     current_object["f"].append(
                         face_values
                     )  # Save face values as list of integers
                     current_object["vn"].append(
                         norm_values
                     )  # Save normal values as list of integers
+                    #print("got")
                     #print(face_values)
                     #print(norm_values)
                 elif line.startswith("usemtl"):
@@ -158,7 +165,9 @@ result = {
     "ANTIALIAS": 1.0,
     "BACKGROUND": [0.0, 0.0, 0.0],
     "MAXDEPTH": 8,
-    "RESOLUTION": [200, 200],
+    "RESOLUTION": [400, 400],
+    "SHADE": 1,
+    "APERATURE": 1.0,
     "THREADS": 60,
     "lights": [{"POS": [0, 0, -900], "DIFF": [0.5, 0.5, 0.5], "SPEC": [0.3, 0.3, 0.3]}],
     "spheres": [],
@@ -170,6 +179,7 @@ objects = save_object_lines()
 materials = get_materials()
 
 print_materials(materials)
+#print(len(norm_arr))
 
 
 if (len(materials) < 1):
@@ -177,16 +187,15 @@ if (len(materials) < 1):
 else:
 
 
-
     for x in range(len(objects)):
         print("loading object", objects[x]["Name"][0], "with material", objects[x]["usemtl"][0])
         mat = None
-        index = 0
+        indexmat = 0
         while (mat == None):
-            if (objects[x]["usemtl"][0] == materials[index]["Name"][0]) :
-                mat = materials[index]
+            if (objects[x]["usemtl"][0] == materials[indexmat]["Name"][0]) :
+                mat = materials[indexmat]
             else:
-                index += 1
+                indexmat += 1
         
         index = 0
         for face in objects[x]["f"]:
