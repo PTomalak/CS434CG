@@ -19,6 +19,7 @@ int width;
 int height;
 int THREADS = 24; // one of those will be used for SDL
 bool main_loop = true;
+std::string blender_input = "scene/testscene.blend";
 
 
 struct Vec3 {
@@ -57,7 +58,7 @@ void render_scene(std::string input, int argc) {
   if (ret1 == -1) perror("fork");
 
   if (ret1 == 0) {
-    execlp("bash", "bash", "scene/extract.sh", "scene/testscene.blend");
+    execlp("bash", "bash", "scene/extract.sh", blender_input.c_str());
   }
 
   waitpid(ret1, NULL, 0);

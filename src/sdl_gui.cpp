@@ -16,12 +16,14 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <thread>
+#include <string>
 
 #if !SDL_VERSION_ATLEAST(2,0,17)
 #error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
 #endif
 
 extern bool main_loop; 
+extern std::string blender_input;
 
 // Main code
 int sdl_gui(int)
@@ -139,6 +141,16 @@ int sdl_gui(int)
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             /*ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 	    */
+
+	    if (ImGui::BeginMenu("Impairment")) {
+		if (ImGui::MenuItem("testscene")) {
+		   blender_input = "scene/testscene.blend";
+		}
+		if (ImGui::MenuItem("lenstest")) {
+		   blender_input = "scene/lenstest.blend";
+		}
+	        ImGui::EndMenu();
+	    }
 
             if (ImGui::Button("Button")) {
 		//render_scene(3);
