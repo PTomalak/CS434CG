@@ -1,7 +1,7 @@
 {
   "ANTIALIAS": 2,
   "BACKGROUND": [0.0, 0.0, 0.0],
-  "MAXDEPTH": 40,
+  "MAXDEPTH": 7,
   "RESOLUTION": [480, 480],
   "THREADS": 11,
   "lights": [

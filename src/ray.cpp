@@ -450,7 +450,7 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
   return result_color;
 }
 
-void raytrace_blur(int x, int y, int thread_num) {
+void raytrace_blur(int x, int y, int thread_num, int number_sensor_cells, float sensor_cell_width) {
   //sensor_cell_locs = GenerateSensorCellArray();
   //printf("TEST %d\n", thread_num);
   std::vector<Ray> rays = CalculateRays(x, y);
@@ -459,7 +459,6 @@ void raytrace_blur(int x, int y, int thread_num) {
   for (int i = 0; i < sensor_cell_locs.size(); i++) {
     glm::vec3 tracedColor = Trace(rays.at(i), maxdepth, init_refractive_idx);
     totalColor += tracedColor;
-    //printf("I: %d, r: %f, g: %f, b: %f\n", i, tracedColor.x, tracedColor.y, tracedColor.z);
   }
 
   glm::vec3 color = totalColor * (1.0f / sensor_cell_locs.size());

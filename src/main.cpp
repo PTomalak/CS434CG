@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
       for (int p = start; p < end; ++p) {
         int x = p % width;
         int y = p / width;
-        raytrace_blur(x, y, i);
+        raytrace_blur(x, y, i, 1, 0.0f);
       }
     });
   }

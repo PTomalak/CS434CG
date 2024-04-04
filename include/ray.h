@@ -21,6 +21,6 @@ extern int height;
 extern std::vector<std::vector<std::array<int, 3>>> pixels;
 
 void raytrace(int x, int y, int thread_num);
-void raytrace_blur(int x, int y, int thread_num);
+void raytrace_blur(int x, int y, int thread_num, int number_sensor_cells, float sensor_cell_width);
 
 #endif // RAY_H
