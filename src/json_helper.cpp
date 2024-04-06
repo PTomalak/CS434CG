@@ -40,7 +40,7 @@ int readJSON(std::string filename) {
   document.Parse(content.c_str());
 
   // Extract content
-  antialias = document["ANTIALIAS"].GetFloat();
+  
   backgroundx = document["BACKGROUND"][0].GetFloat();
   backgroundy = document["BACKGROUND"][1].GetFloat();
   backgroundz = document["BACKGROUND"][2].GetFloat();
@@ -51,6 +51,7 @@ int readJSON(std::string filename) {
   //smooth = document["SHADE"].GetInt();
   //aperature = document["APERATURE"].GetFloat();
   //THREADS = document["THREADS"].GetInt();
+  //antialias = document["ANTIALIAS"].GetFloat();
 
   // Read lights
   for (const auto &light : document["lights"].GetArray()) {

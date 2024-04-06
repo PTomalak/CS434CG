@@ -36,6 +36,7 @@ extern int resolutionX;
 extern int resolutionY;
 extern int THREADS;
 extern int maxdepth;
+extern float antialias;
 
 
 namespace fs = std::filesystem;
@@ -196,6 +197,7 @@ int sdl_gui(int) {
       static int resx = THREADS*2;
       static int resy = THREADS*2;
       static int depth = 4;
+      static float alias = 1.0f;
       // static int counter = 0;
 
       // ImGui::Begin("Hello, world!");                          // Create a
@@ -219,6 +221,7 @@ int sdl_gui(int) {
       ImGui::SliderInt("canvas size X", &resx, THREADS, 1600);
       ImGui::SliderInt("canvas size Y", &resy, THREADS, 1600);
       ImGui::SliderInt("max depth", &depth, 1, 32);
+      ImGui::SliderFloat("antialiasing", &alias, 1.0f, 4.0f);
 
       bool smoothing;
       if (ImGui::Checkbox("Shade smooth", &smoothing)) {
@@ -234,6 +237,7 @@ int sdl_gui(int) {
         resolutionX = resx;
         resolutionY = resy;
         maxdepth = depth;
+        antialias = alias;
         break;
         // break;
       }
