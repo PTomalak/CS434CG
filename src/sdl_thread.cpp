@@ -28,9 +28,6 @@ void handleSDL(int argc) {
                  (e.key.keysym.sym == SDLK_ESCAPE ||
                   e.key.keysym.sym == SDLK_c || e.key.keysym.sym == SDLK_q)) {
         quit = true; // Quit if ESC key is pressed
-      } else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_r) {
-        refresh = 1;
-        quit = true;
       }
     }
 

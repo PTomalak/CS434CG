@@ -36,7 +36,6 @@ float backgroundz;
 int maxdepth;
 int resolutionX;
 int resolutionY;
-int refresh = 0;
 int smooth = 0;
 float aperature = 0.03f;
 int sensors = 4;
@@ -175,11 +174,6 @@ int main(int argc, char *argv[]) {
 
   std::string savename = argv[2];
   save_bmp(savename, antialias);
-
-  if (refresh == 1) {
-    execvp(argv[0], argv);
-    return 1;
-  }
 
   return 0;
 }
