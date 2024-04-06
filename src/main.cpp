@@ -57,6 +57,18 @@ std::vector<std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float, std::vector<
 
 //std::thread threads[24];
 
+std::vector<glm::vec3> GenerateSensorCellArray() {
+  std::vector<glm::vec3> sensor_cell_locs;
+  for (int i = 0; i < number_sensor_cells; i++) {
+    for (int j = 0; j < number_sensor_cells; j++) {
+      glm::vec3 loc = glm::vec3((j - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, (i - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, camera_pos.z);
+      sensor_cell_locs.push_back(loc);
+      //printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
+    }
+  }
+  return sensor_cell_locs;
+}
+
 void render_scene(std::string input, int argc) {
   //pixels.clear();
   //pixels.resize(width, std::vector<std::array<int, 3>>(height));
@@ -83,6 +95,12 @@ void render_scene(std::string input, int argc) {
   lights.clear();
   spheres.clear();
   quads.clear();
+
+  width = resolutionX * antialias;
+  height = resolutionY * antialias;
+
+  sensor_cell_locs = GenerateSensorCellArray();
+  pixels.resize(width, std::vector<std::array<int, 3>>(height));
 
   if (readJSON(input)) {
     printf("Problem reading JSON file\n");
@@ -113,17 +131,7 @@ void render_scene(std::string input, int argc) {
 
 }
 
-std::vector<glm::vec3> GenerateSensorCellArray() {
-  std::vector<glm::vec3> sensor_cell_locs;
-  for (int i = 0; i < number_sensor_cells; i++) {
-    for (int j = 0; j < number_sensor_cells; j++) {
-      glm::vec3 loc = glm::vec3((j - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, (i - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, camera_pos.z);
-      sensor_cell_locs.push_back(loc);
-      //printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
-    }
-  }
-  return sensor_cell_locs;
-}
+
 
 int main(int argc, char *argv[]) {
   // Making sure output is as expected
@@ -133,6 +141,10 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  if(THREADS < 2) {
+    printf("Running with %d thread(s), please run with at least 2\n", THREADS);
+    return -1;
+  }
 
   // Handle JSON
   std::string input = argv[1];
@@ -141,22 +153,9 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  width = resolutionX * antialias;
-  height = resolutionY * antialias;
 
-  sensor_cell_locs = GenerateSensorCellArray();
   auto startTime = std::chrono::steady_clock::now();
 
-  // for debug prints uncomment:
-  // printJSON();
-
-  if(THREADS < 2) {
-    printf("Running with %d thread(s), please run with at least 2\n", THREADS);
-    return -1;
-  }
-
-  // Resize pixels
-  pixels.resize(width, std::vector<std::array<int, 3>>(height));
 
   // This sucks but is a solution to imgui not being thread safe
   while (main_loop) {

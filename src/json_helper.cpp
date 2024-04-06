@@ -46,8 +46,8 @@ int readJSON(std::string filename) {
   backgroundz = document["BACKGROUND"][2].GetFloat();
 
   maxdepth = document["MAXDEPTH"].GetInt();
-  resolutionX = document["RESOLUTION"][0].GetInt();
-  resolutionY = document["RESOLUTION"][1].GetInt();
+  //resolutionX = document["RESOLUTION"][0].GetInt();
+  //resolutionY = document["RESOLUTION"][1].GetInt();
   //smooth = document["SHADE"].GetInt();
   //aperature = document["APERATURE"].GetFloat();
   THREADS = document["THREADS"].GetInt();
