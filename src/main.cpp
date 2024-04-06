@@ -108,6 +108,7 @@ void render_scene(std::string input, int argc) {
   }
   
   std::thread threads[THREADS];
+  auto startTime = std::chrono::steady_clock::now();
 
   // First thread for SDL handling
   threads[0] = std::thread(handleSDL, argc);
@@ -125,9 +126,15 @@ void render_scene(std::string input, int argc) {
     });
   }
 
-  for (int i = 0; i < THREADS; ++i) {
+  for (int i = 1; i < THREADS; ++i) {
     threads[i].join();
   }
+  auto endTime = std::chrono::steady_clock::now();
+  auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+  int totalPixels = width * height;
+  double timePerPixel = static_cast<double>(elapsedTime) / totalPixels;
+  printf("processed %d pixels in %d s. Time per pixel: %.3f ms\n", totalPixels, elapsedTime/1000, timePerPixel);
+  threads[0].join();
 
 }
 
@@ -154,7 +161,7 @@ int main(int argc, char *argv[]) {
   }
 
 
-  auto startTime = std::chrono::steady_clock::now();
+
 
 
   // This sucks but is a solution to imgui not being thread safe
@@ -164,11 +171,7 @@ int main(int argc, char *argv[]) {
       render_scene(input, argc);
   }
 
-  auto endTime = std::chrono::steady_clock::now();
-  auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
-  int totalPixels = width * height;
-  double timePerPixel = static_cast<double>(elapsedTime) / totalPixels;
-  printf("processed %d pixels in %d s. Time per pixel: %.3f ms\n", totalPixels, elapsedTime/1000, timePerPixel);
+
 
   std::string savename = argv[2];
   save_bmp(savename, antialias);
