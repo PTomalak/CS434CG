@@ -34,6 +34,7 @@ extern float aperature;
 extern int sensors;
 extern int resolutionX;
 extern int resolutionY;
+extern int THREADS;
 
 
 namespace fs = std::filesystem;
@@ -191,8 +192,8 @@ int sdl_gui(int) {
 
       static float f = 0.03f;
       static int l = 4;
-      static int resx = 200;
-      static int resy = 200;
+      static int resx = THREADS*2;
+      static int resy = THREADS*2;
       // static int counter = 0;
 
       // ImGui::Begin("Hello, world!");                          // Create a
@@ -213,8 +214,8 @@ int sdl_gui(int) {
        */
 
       ImGui::SliderInt("sensor size", &l, 1, 16);
-      ImGui::SliderInt("canvas size X", &resx, 60, 1600);
-      ImGui::SliderInt("canvas size Y", &resy, 60, 1600);
+      ImGui::SliderInt("canvas size X", &resx, THREADS, 1600);
+      ImGui::SliderInt("canvas size Y", &resy, THREADS, 1600);
 
 
       bool smoothing;

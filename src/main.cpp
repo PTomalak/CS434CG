@@ -2,25 +2,24 @@
 #include "image.h"
 #include "json_helper.h"
 #include "ray.h"
-#include "sdl_thread.h"
 #include "sdl_gui.h"
+#include "sdl_thread.h"
 
 #include <array>
+#include <chrono>
 #include <fstream>
 #include <iostream>
+#include <sys/wait.h>
 #include <thread>
 #include <tuple>
 #include <unistd.h>
 #include <vector>
-#include <chrono>
-#include <sys/wait.h>
 
 int width;
 int height;
 int THREADS = 24; // one of those will be used for SDL
 bool main_loop = true;
 std::string blender_input = "scene/focused.blend";
-
 
 struct Vec3 {
   float x, y, z;
@@ -40,8 +39,8 @@ int smooth = 0;
 float aperature = 0.03f;
 int sensors = 4;
 
-const int number_sensor_cells = 4; //makes sensor a 2x2 grid
-const float sensor_cell_width = 1.0f / 256; //each cell a 0.25x0.25 square
+const int number_sensor_cells = 4;          // makes sensor a 2x2 grid
+const float sensor_cell_width = 1.0f / 256; // each cell a 0.25x0.25 square
 glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
 
 struct Light {
@@ -52,29 +51,35 @@ struct Light {
 
 std::vector<Light> lights;
 std::vector<std::tuple<Vec3, float, Vec3, Vec3, float>> spheres;
-std::vector<std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float, std::vector<Vec3>>> quads;
+std::vector<
+    std::tuple<std::vector<Vec3>, Vec3, Vec3, float, float, std::vector<Vec3>>>
+    quads;
 
-//std::thread threads[24];
+// std::thread threads[24];
 
 std::vector<glm::vec3> GenerateSensorCellArray() {
   std::vector<glm::vec3> sensor_cell_locs;
   for (int i = 0; i < number_sensor_cells; i++) {
     for (int j = 0; j < number_sensor_cells; j++) {
-      glm::vec3 loc = glm::vec3((j - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, (i - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, camera_pos.z);
+      glm::vec3 loc =
+          glm::vec3((j - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width,
+                    (i - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width,
+                    camera_pos.z);
       sensor_cell_locs.push_back(loc);
-      //printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
+      // printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
     }
   }
   return sensor_cell_locs;
 }
 
 void render_scene(std::string input, int argc) {
-  //pixels.clear();
-  //pixels.resize(width, std::vector<std::array<int, 3>>(height));
-  
+  // pixels.clear();
+  // pixels.resize(width, std::vector<std::array<int, 3>>(height));
+
   // First we must reread from blender
   int ret1 = fork();
-  if (ret1 == -1) perror("fork");
+  if (ret1 == -1)
+    perror("fork");
 
   if (ret1 == 0) {
     execlp("bash", "bash", "scene/extract.sh", blender_input.c_str());
@@ -83,14 +88,15 @@ void render_scene(std::string input, int argc) {
   waitpid(ret1, NULL, 0);
 
   int ret2 = fork();
-  if (ret2 == -1) perror("fork");
+  if (ret2 == -1)
+    perror("fork");
 
   if (ret2 == 0) {
     execlp("python3", "python3", "scene/parser.py", NULL);
   }
 
   waitpid(ret2, NULL, 0);
- 
+
   lights.clear();
   spheres.clear();
   quads.clear();
@@ -105,7 +111,7 @@ void render_scene(std::string input, int argc) {
     printf("Problem reading JSON file\n");
     return;
   }
-  
+
   std::thread threads[THREADS];
   auto startTime = std::chrono::steady_clock::now();
 
@@ -129,15 +135,15 @@ void render_scene(std::string input, int argc) {
     threads[i].join();
   }
   auto endTime = std::chrono::steady_clock::now();
-  auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+  auto elapsedTime =
+      std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime)
+          .count();
   int totalPixels = width * height;
   double timePerPixel = static_cast<double>(elapsedTime) / totalPixels;
-  printf("processed %d pixels in %d s. Time per pixel: %.3f ms\n", totalPixels, elapsedTime/1000, timePerPixel);
+  printf("processed %d pixels in %d s. Time per pixel: %.3f ms\n", totalPixels,
+         elapsedTime / 1000, timePerPixel);
   threads[0].join();
-
 }
-
-
 
 int main(int argc, char *argv[]) {
   // Making sure output is as expected
@@ -147,10 +153,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if(THREADS < 2) {
-    printf("Running with %d thread(s), please run with at least 2\n", THREADS);
-    return -1;
-  }
+
 
   // Handle JSON
   std::string input = argv[1];
@@ -159,18 +162,16 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-
-
-
+  int numThreads = sysconf(_SC_NPROCESSORS_ONLN);
+  printf("Using %d of system threads.\n", numThreads);
+  THREADS = numThreads * 5;
 
   // This sucks but is a solution to imgui not being thread safe
   while (main_loop) {
     sdl_gui(argc);
-    if (main_loop) 
+    if (main_loop)
       render_scene(input, argc);
   }
-
-
 
   std::string savename = argv[2];
   save_bmp(savename, antialias);
