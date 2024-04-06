@@ -35,6 +35,7 @@ extern int sensors;
 extern int resolutionX;
 extern int resolutionY;
 extern int THREADS;
+extern int maxdepth;
 
 
 namespace fs = std::filesystem;
@@ -194,6 +195,7 @@ int sdl_gui(int) {
       static int l = 4;
       static int resx = THREADS*2;
       static int resy = THREADS*2;
+      static int depth = 4;
       // static int counter = 0;
 
       // ImGui::Begin("Hello, world!");                          // Create a
@@ -216,7 +218,7 @@ int sdl_gui(int) {
       ImGui::SliderInt("sensor size", &l, 1, 16);
       ImGui::SliderInt("canvas size X", &resx, THREADS, 1600);
       ImGui::SliderInt("canvas size Y", &resy, THREADS, 1600);
-
+      ImGui::SliderInt("max depth", &depth, 1, 32);
 
       bool smoothing;
       if (ImGui::Checkbox("Shade smooth", &smoothing)) {
@@ -231,6 +233,7 @@ int sdl_gui(int) {
         counter = l;
         resolutionX = resx;
         resolutionY = resy;
+        maxdepth = depth;
         break;
         // break;
       }

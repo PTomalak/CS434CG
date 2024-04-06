@@ -45,12 +45,12 @@ int readJSON(std::string filename) {
   backgroundy = document["BACKGROUND"][1].GetFloat();
   backgroundz = document["BACKGROUND"][2].GetFloat();
 
-  maxdepth = document["MAXDEPTH"].GetInt();
+  //maxdepth = document["MAXDEPTH"].GetInt();
   //resolutionX = document["RESOLUTION"][0].GetInt();
   //resolutionY = document["RESOLUTION"][1].GetInt();
   //smooth = document["SHADE"].GetInt();
   //aperature = document["APERATURE"].GetFloat();
-  THREADS = document["THREADS"].GetInt();
+  //THREADS = document["THREADS"].GetInt();
 
   // Read lights
   for (const auto &light : document["lights"].GetArray()) {
