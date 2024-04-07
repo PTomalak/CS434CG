@@ -82,6 +82,8 @@ void render_scene(std::string input, int argc) {
 
   if (ret1 == 0) {
     execlp("bash", "bash", "scene/extract.sh", blender_input.c_str());
+		perror("extract.sh failed!!!");
+		_exit(1);
   }
 
   waitpid(ret1, NULL, 0);
@@ -92,6 +94,8 @@ void render_scene(std::string input, int argc) {
 
   if (ret2 == 0) {
     execlp("python3", "python3", "scene/parser.py", NULL);
+		perror("parser.py failed!!!");
+		_exit(1);
   }
 
   waitpid(ret2, NULL, 0);
