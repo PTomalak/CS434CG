@@ -19,7 +19,7 @@ int width;
 int height;
 int THREADS = 24; // one of those will be used for SDL
 bool main_loop = true;
-std::string blender_input = "scene/focused.blend";
+std::string blender_input = "scene/lenstest.blend";
 
 struct Vec3 {
   float x, y, z;
@@ -39,7 +39,6 @@ int smooth = 0;
 float sensor_spacing = 0.00f;
 int sensors = 1;
 int headless = 0;
-
 
 glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
 
@@ -63,8 +62,7 @@ std::vector<glm::vec3> GenerateSensorCellArray() {
     for (int j = 0; j < sensors; j++) {
       glm::vec3 loc =
           glm::vec3((j - (sensors / 2) + 0.5f) * sensor_spacing,
-                    (i - (sensors / 2) + 0.5f) * sensor_spacing,
-                    camera_pos.z);
+                    (i - (sensors / 2) + 0.5f) * sensor_spacing, camera_pos.z);
       sensor_cell_locs.push_back(loc);
       // printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
     }
@@ -82,8 +80,8 @@ void render_scene(std::string input, int argc) {
 
   if (ret1 == 0) {
     execlp("bash", "bash", "scene/extract.sh", blender_input.c_str());
-		perror("extract.sh failed!!!");
-		_exit(1);
+    perror("extract.sh failed!!!");
+    _exit(1);
   }
 
   waitpid(ret1, NULL, 0);
@@ -94,8 +92,8 @@ void render_scene(std::string input, int argc) {
 
   if (ret2 == 0) {
     execlp("python3", "python3", "scene/parser.py", NULL);
-		perror("parser.py failed!!!");
-		_exit(1);
+    perror("parser.py failed!!!");
+    _exit(1);
   }
 
   waitpid(ret2, NULL, 0);
@@ -118,8 +116,10 @@ void render_scene(std::string input, int argc) {
   std::thread threads[THREADS];
   auto startTime = std::chrono::steady_clock::now();
 
-  // First thread for SDL handling
-  threads[0] = std::thread(handleSDL, argc);
+  if (!headless) {
+    // First thread for SDL handling
+    threads[0] = std::thread(handleSDL, argc);
+  }
 
   // setup threads for setting pixel colors
   for (int i = 1; i < THREADS; ++i) {
@@ -145,7 +145,9 @@ void render_scene(std::string input, int argc) {
   double timePerPixel = static_cast<double>(elapsedTime) / totalPixels;
   printf("processed %d pixels in %d s. Time per pixel: %.3f ms\n", totalPixels,
          elapsedTime / 1000, timePerPixel);
-  threads[0].join();
+  if (!headless) {
+    threads[0].join();
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -176,9 +178,14 @@ int main(int argc, char *argv[]) {
 
   // This sucks but is a solution to imgui not being thread safe
   while (main_loop) {
-    sdl_gui(argc);
-    if (main_loop)
+    if (headless) {
       render_scene(input, argc);
+      break;
+    } else {
+      sdl_gui(argc);
+      if (main_loop)
+        render_scene(input, argc);
+    }
   }
 
   std::string savename = argv[2];

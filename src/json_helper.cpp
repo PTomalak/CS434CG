@@ -15,7 +15,9 @@ extern int resolutionX;
 extern int resolutionY;
 extern int THREADS;
 extern int smooth;
-extern float aperature;
+extern float sensor_spacing;
+extern int sensors;
+extern int headless;
 
 struct Light {
   Vec3 pos;
@@ -45,13 +47,16 @@ int readJSON(std::string filename) {
   backgroundy = document["BACKGROUND"][1].GetFloat();
   backgroundz = document["BACKGROUND"][2].GetFloat();
 
-  //maxdepth = document["MAXDEPTH"].GetInt();
-  //resolutionX = document["RESOLUTION"][0].GetInt();
-  //resolutionY = document["RESOLUTION"][1].GetInt();
-  //smooth = document["SHADE"].GetInt();
-  //aperature = document["APERATURE"].GetFloat();
-  //THREADS = document["THREADS"].GetInt();
-  //antialias = document["ANTIALIAS"].GetFloat();
+  if (headless) {
+    maxdepth = document["MAXDEPTH"].GetInt();
+    resolutionX = document["RESOLUTION"][0].GetInt();
+    resolutionY = document["RESOLUTION"][1].GetInt();
+    smooth = document["SHADE"].GetInt();
+    sensor_spacing = document["SENSOR_SPACING"].GetFloat();
+    sensors = document["SENSORS"].GetInt();
+    THREADS = document["THREADS"].GetInt();
+    antialias = document["ANTIALIAS"].GetFloat();
+  }
 
   // Read lights
   for (const auto &light : document["lights"].GetArray()) {
