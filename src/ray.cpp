@@ -48,7 +48,7 @@ struct Light {
 extern vector<Light> lights;
 extern vector<tuple<Vec3, float, Vec3, Vec3, float>> spheres;
 extern std::vector<glm::vec3> sensor_cell_locs;
-extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float, vector<Vec3>>>
+extern vector<tuple<vector<Vec3>, Vec3, Vec3, float, float, vector<Vec3>, vector<int>>>
     quads;
 
 const float PI = 3.14159265358979323846f;
@@ -284,6 +284,14 @@ glm::vec3 weightedAverageNormal(const glm::vec3& intersectionPoint,
     return glm::normalize(weightedNormal);
 }
 
+bool BoundingBoxIntersection(Ray ray, float min, float max) {
+	return true;
+}
+
+/*std::unordered_set<int> AddBoundingBox(Ray ray) {
+	
+}*/
+
 // Function to trace the ray and determine if it intersects any spheres or
 // trigs
 // mode: 0 - don't ignore refractive / transparent objects
@@ -299,7 +307,7 @@ P FirstIntersection(Ray ray, int mode) {
   glm::vec3 normal;
 
   // Check for sphere intersections
-  for (const auto &sphere : spheres) {
+  /*for (const auto &sphere : spheres) {
     Vec3 pos = std::get<0>(sphere);
     float radius = std::get<1>(sphere);
     Vec3 diff = std::get<2>(sphere);
@@ -321,12 +329,16 @@ P FirstIntersection(Ray ray, int mode) {
       result.shine = shininess;
       result.refractive_idx = -1;
     }
-  }
+  }*/
+	std::unordered_set<int> bounding_boxes;
+
+	
 
 
 
   // Check for triangle intersections
   for (const auto &quad : quads) {
+		if (
     std::vector<Vec3> vertices = std::get<0>(quad);
     std::vector<Vec3> vns = std::get<5>(quad);
 
