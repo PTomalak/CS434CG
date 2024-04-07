@@ -233,7 +233,7 @@ int sdl_gui(int) {
         render = true;
         counter++;
         sensor_spacing = f;
-        counter = l;
+        sensors = l;
         resolutionX = resx;
         resolutionY = resy;
         maxdepth = depth;

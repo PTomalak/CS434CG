@@ -38,6 +38,7 @@ int resolutionY;
 int smooth = 0;
 float sensor_spacing = 0.00f;
 int sensors = 1;
+int headless = 0;
 
 
 glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
