@@ -30,7 +30,7 @@
 extern bool main_loop;
 extern std::string blender_input;
 extern int smooth;
-extern float aperature;
+extern float sensor_spacing;
 extern int sensors;
 extern int resolutionX;
 extern int resolutionY;
@@ -86,7 +86,7 @@ int sdl_gui(int) {
       (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
   SDL_Window *window =
       SDL_CreateWindow("Visual Impairment GUI", SDL_WINDOWPOS_CENTERED,
-                       SDL_WINDOWPOS_CENTERED, 400, 200, window_flags);
+                       SDL_WINDOWPOS_CENTERED, 400, 300, window_flags);
   if (window == nullptr) {
     printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
     return -1;
@@ -211,7 +211,7 @@ int sdl_gui(int) {
 
       populateBlendFilesMenu("scene/");
 
-      ImGui::SliderFloat("aperature", &f, 0.0f,
+      ImGui::SliderFloat("sensor spacing", &f, 0.0f,
                          0.1f); // Edit 1 float using a slider from 0.0f to 1.0f
       /*ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats
        * representing a color
@@ -232,8 +232,8 @@ int sdl_gui(int) {
         // render_scene(3);
         render = true;
         counter++;
-        aperature = f;
-        counter = l;
+        sensor_spacing = f;
+        sensors = l;
         resolutionX = resx;
         resolutionY = resy;
         maxdepth = depth;

@@ -36,11 +36,11 @@ int maxdepth;
 int resolutionX;
 int resolutionY;
 int smooth = 0;
-float aperature = 0.03f;
-int sensors = 4;
+float sensor_spacing = 0.00f;
+int sensors = 1;
+int headless = 0;
 
-const int number_sensor_cells = 4;          // makes sensor a 2x2 grid
-const float sensor_cell_width = 1.0f / 256; // each cell a 0.25x0.25 square
+
 glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
 
 struct Light {
@@ -60,11 +60,11 @@ std::vector<
 
 std::vector<glm::vec3> GenerateSensorCellArray() {
   std::vector<glm::vec3> sensor_cell_locs;
-  for (int i = 0; i < number_sensor_cells; i++) {
-    for (int j = 0; j < number_sensor_cells; j++) {
+  for (int i = 0; i < sensors; i++) {
+    for (int j = 0; j < sensors; j++) {
       glm::vec3 loc =
-          glm::vec3((j - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width,
-                    (i - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width,
+          glm::vec3((j - (sensors / 2) + 0.5f) * sensor_spacing,
+                    (i - (sensors / 2) + 0.5f) * sensor_spacing,
                     camera_pos.z);
       sensor_cell_locs.push_back(loc);
       // printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
@@ -74,8 +74,7 @@ std::vector<glm::vec3> GenerateSensorCellArray() {
 }
 
 void render_scene(std::string input, int argc) {
-  // pixels.clear();
-  // pixels.resize(width, std::vector<std::array<int, 3>>(height));
+  pixels.clear();
 
   // First we must reread from blender
   int ret1 = fork();
@@ -84,6 +83,8 @@ void render_scene(std::string input, int argc) {
 
   if (ret1 == 0) {
     execlp("bash", "bash", "scene/extract.sh", blender_input.c_str());
+		perror("extract.sh failed!!!");
+		_exit(1);
   }
 
   waitpid(ret1, NULL, 0);
@@ -94,6 +95,8 @@ void render_scene(std::string input, int argc) {
 
   if (ret2 == 0) {
     execlp("python3", "python3", "scene/parser.py", NULL);
+		perror("parser.py failed!!!");
+		_exit(1);
   }
 
   waitpid(ret2, NULL, 0);
@@ -127,7 +130,7 @@ void render_scene(std::string input, int argc) {
       for (int p = start; p < end; ++p) {
         int x = p % width;
         int y = p / width;
-        raytrace_blur(x, y, i, 1, 0.0f);
+        raytrace_blur(x, y, i);
       }
     });
   }
@@ -154,7 +157,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-
+  if (argc <= 3) {
+    headless = 1;
+    printf("\n\nrunning in headless mode\n");
+  } else {
+    printf("\n\nrunning in GUI mode\n");
+  }
 
   // Handle JSON
   std::string input = argv[1];

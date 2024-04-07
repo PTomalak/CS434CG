@@ -207,7 +207,7 @@ result = {
 objects = save_object_lines()
 materials = get_materials()
 
-print_materials(materials)
+#print_materials(materials)
 #print(len(norm_arr))
 
 
