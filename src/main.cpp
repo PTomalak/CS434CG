@@ -80,12 +80,24 @@ void render_scene(std::string input) {
 
   if (ret1 == 0) {
     printf("using scene: %s\n", blender_input.c_str());
-    execlp("bash", "bash", "scene/extract.sh", blender_input.c_str(), nullptr);
+    execlp("bash", "bash", "scene/extract.sh", blender_input.c_str(), NULL);
     perror("extract.sh failed!!!");
     _exit(1);
   }
 
   waitpid(ret1, NULL, 0);
+
+  int ret1_5 = fork();
+  if (ret1_5 == -1)
+    perror("fork");
+
+  if (ret1_5 == 0) {
+    execlp("bash", "bash", "scene/update_params.sh", blender_input.c_str(), NULL);
+    perror("update_params.sh failed!!!");
+    _exit(1);
+  }
+
+  waitpid(ret1_5, NULL, 0);
 
   int ret2 = fork();
   if (ret2 == -1)

@@ -175,6 +175,9 @@ result = {
     "quads": [],
 }
 
+with open("./scene/settings.json", "r") as settings_file:
+    settings = json.load(settings_file)
+result.update(settings)
 
 objects = save_object_lines()
 materials = get_materials()

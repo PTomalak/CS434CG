@@ -7,8 +7,8 @@
     ],
     "MAXDEPTH": 4,
     "RESOLUTION": [
-        1920,
-        1080
+        60,
+        60
     ],
     "SHADE": 0,
     "SENSOR_SPACING": 0.029999999329447746,
