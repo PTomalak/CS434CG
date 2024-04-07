@@ -192,8 +192,8 @@ int sdl_gui(int) {
     {
       static int counter = 0;
 
-      static float f = 0.03f;
-      static int l = 4;
+      static float f = 0.0f;
+      static int l = 1;
       static int resx = THREADS*2;
       static int resy = THREADS*2;
       static int depth = 4;
