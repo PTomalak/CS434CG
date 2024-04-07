@@ -3,10 +3,7 @@
 extern int refresh;
 
 // Function to handle SDL
-void handleSDL(int argc) {
-  if (argc <= 3) {
-    return;
-  }
+void handleSDL() {
   SDL_Window *window = NULL;
   SDL_Renderer *renderer = NULL;
 

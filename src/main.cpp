@@ -70,7 +70,7 @@ std::vector<glm::vec3> GenerateSensorCellArray() {
   return sensor_cell_locs;
 }
 
-void render_scene(std::string input, int argc) {
+void render_scene(std::string input) {
   pixels.clear();
 
   // First we must reread from blender
@@ -102,23 +102,25 @@ void render_scene(std::string input, int argc) {
   spheres.clear();
   quads.clear();
 
+  if (readJSON(input)) {
+    printf("Problem reading JSON file\n");
+    return;
+  }
+
   width = resolutionX * antialias;
   height = resolutionY * antialias;
 
   sensor_cell_locs = GenerateSensorCellArray();
   pixels.resize(width, std::vector<std::array<int, 3>>(height));
 
-  if (readJSON(input)) {
-    printf("Problem reading JSON file\n");
-    return;
-  }
+
 
   std::thread threads[THREADS];
   auto startTime = std::chrono::steady_clock::now();
 
   if (!headless) {
     // First thread for SDL handling
-    threads[0] = std::thread(handleSDL, argc);
+    threads[0] = std::thread(handleSDL);
   }
 
   // setup threads for setting pixel colors
@@ -166,11 +168,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Handle JSON
-  std::string input = argv[1];
-  if (readJSON(input)) {
-    printf("Problem reading JSON file\n");
-    return 0;
-  }
+  std::string input = "./scene/blended.json";
+  blender_input = argv[1];
 
   int numThreads = sysconf(_SC_NPROCESSORS_ONLN);
   printf("Using %d of system threads.\n", numThreads);
@@ -179,12 +178,12 @@ int main(int argc, char *argv[]) {
   // This sucks but is a solution to imgui not being thread safe
   while (main_loop) {
     if (headless) {
-      render_scene(input, argc);
+      render_scene(input);
       break;
     } else {
       sdl_gui(argc);
       if (main_loop)
-        render_scene(input, argc);
+        render_scene(input);
     }
   }
 

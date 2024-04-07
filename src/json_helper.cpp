@@ -104,6 +104,7 @@ int readJSON(std::string filename) {
     float refractive = quad["REFRACTIVE"].GetFloat();
     quads.push_back(make_tuple(vertices, diff, spec, shininess, refractive, normals));
   }
+  //printJSON();
   return 0;
 }
 

@@ -10,6 +10,6 @@ extern int height;
 
 extern std::vector<std::vector<std::array<int, 3>>> pixels;
 
-void handleSDL(int argc);
+void handleSDL();
 
 #endif // SDL_THREAD_H
