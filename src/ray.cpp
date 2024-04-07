@@ -324,7 +324,7 @@ void AddBoundingBox(Ray ray, unordered_set<int> &boxes) {
   min = glm::vec3(0.0f, -300.0f, -800.f);
   max = glm::vec3(450.0f, 0.0f, 0.0f);
   if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(3);
+    boxes.insert(4);
 
   min = glm::vec3(-450.f, 0.0f, 0.f);
   max = glm::vec3(0.0f, 300.0f, 800.0f);
