@@ -86,7 +86,7 @@ int sdl_gui(int) {
       (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
   SDL_Window *window =
       SDL_CreateWindow("Visual Impairment GUI", SDL_WINDOWPOS_CENTERED,
-                       SDL_WINDOWPOS_CENTERED, 400, 200, window_flags);
+                       SDL_WINDOWPOS_CENTERED, 400, 300, window_flags);
   if (window == nullptr) {
     printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
     return -1;
