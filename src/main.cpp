@@ -36,8 +36,8 @@ int maxdepth;
 int resolutionX;
 int resolutionY;
 int smooth = 0;
-float sensor_spacing = 0.00f;
-int sensors = 1;
+float sensor_spacing = 1.00f / 64;
+int sensors = 4;
 
 
 glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
@@ -152,12 +152,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (argc <= 3) {
+  /*if (argc <= 3) {
     headless = 1;
     printf("\n\nrunning in headless mode\n");
   } else {
     printf("\n\nrunning in GUI mode\n");
-  }
+  }*/
 
   // Handle JSON
   std::string input = argv[1];
