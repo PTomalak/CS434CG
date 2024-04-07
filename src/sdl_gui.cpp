@@ -30,7 +30,7 @@
 extern bool main_loop;
 extern std::string blender_input;
 extern int smooth;
-extern float aperature;
+extern float sensor_spacing;
 extern int sensors;
 extern int resolutionX;
 extern int resolutionY;
@@ -211,7 +211,7 @@ int sdl_gui(int) {
 
       populateBlendFilesMenu("scene/");
 
-      ImGui::SliderFloat("aperature", &f, 0.0f,
+      ImGui::SliderFloat("sensor spacing", &f, 0.0f,
                          0.1f); // Edit 1 float using a slider from 0.0f to 1.0f
       /*ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats
        * representing a color
@@ -232,7 +232,7 @@ int sdl_gui(int) {
         // render_scene(3);
         render = true;
         counter++;
-        aperature = f;
+        sensor_spacing = f;
         counter = l;
         resolutionX = resx;
         resolutionY = resy;

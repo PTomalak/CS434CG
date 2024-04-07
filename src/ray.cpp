@@ -55,8 +55,6 @@ const float PI = 3.14159265358979323846f;
 const float fov = 150.0f;
 const float f_inf = std::numeric_limits<float>::infinity();
 const float init_refractive_idx = 1.0f;
-const int number_sensor_cells = 4; //makes sensor a 2x2 grid
-const float sensor_cell_width = 1.0f / 256; //each cell a 0.25x0.25 square
 
 // Camera is so far to recreate a similar setup as on example pictures
 extern glm::vec3 camera_pos;
@@ -100,18 +98,6 @@ void GrammSchmidt(glm::vec3 &l, glm::vec3 &v, glm::vec3 &u) {
   v = glm::normalize(v - glm::dot(v, l) * l);
   u = glm::cross(v, l);
 }
-
-/*std::vector<glm::vec3> GenerateSensorCellArray() {
-  std::vector<glm::vec3> sensor_cell_locs;
-  for (int i = 0; i < number_sensor_cells; i++) {
-    for (int j = 0; j < number_sensor_cells; j++) {
-      glm::vec3 loc = glm::vec3((j - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, (i - (number_sensor_cells / 2) + 0.5f) * sensor_cell_width, camera_pos.z);
-      sensor_cell_locs.push_back(loc);
-      //printf("J: %d I: %d %f, %f, %f\n", j, i, loc.x, loc.y, loc.z);
-    }
-  }
-  return sensor_cell_locs;
-}*/
 
 std::vector<Ray> CalculateRays(int x, int y) {
   //printf("x: %d, y: %d\n",x, y);
@@ -514,7 +500,7 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
   return result_color;
 }
 
-void raytrace_blur(int x, int y, int thread_num, int number_sensor_cells, float sensor_cell_width) {
+void raytrace_blur(int x, int y, int thread_num) {
   //sensor_cell_locs = GenerateSensorCellArray();
   //printf("TEST %d\n", thread_num);
   std::vector<Ray> rays = CalculateRays(x, y);
