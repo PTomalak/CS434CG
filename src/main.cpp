@@ -73,8 +73,7 @@ std::vector<glm::vec3> GenerateSensorCellArray() {
 }
 
 void render_scene(std::string input, int argc) {
-  // pixels.clear();
-  // pixels.resize(width, std::vector<std::array<int, 3>>(height));
+  pixels.clear();
 
   // First we must reread from blender
   int ret1 = fork();

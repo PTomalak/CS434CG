@@ -2,3 +2,6 @@
 *.log
 output.bmp
 *.blend1
+scene/blended.json
+scene/exported_scene.mtl
+scene/exported_scene.obj
