@@ -79,7 +79,8 @@ void render_scene(std::string input) {
     perror("fork");
 
   if (ret1 == 0) {
-    execlp("bash", "bash", "scene/extract.sh", blender_input.c_str());
+    printf("using scene: %s\n", blender_input.c_str());
+    execlp("bash", "bash", "scene/extract.sh", blender_input.c_str(), nullptr);
     perror("extract.sh failed!!!");
     _exit(1);
   }
