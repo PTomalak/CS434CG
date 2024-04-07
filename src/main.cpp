@@ -156,12 +156,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  /*if (argc <= 3) {
+  if (argc <= 3) {
     headless = 1;
     printf("\n\nrunning in headless mode\n");
   } else {
     printf("\n\nrunning in GUI mode\n");
-  }*/
+  }
 
   // Handle JSON
   std::string input = argv[1];
