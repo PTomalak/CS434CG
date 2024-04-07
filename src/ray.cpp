@@ -1,4 +1,5 @@
 #include "ray.h"
+#include <unordered_set>
 
 struct Ray {
   glm::vec3 origin;
@@ -284,13 +285,82 @@ glm::vec3 weightedAverageNormal(const glm::vec3& intersectionPoint,
     return glm::normalize(weightedNormal);
 }
 
-bool BoundingBoxIntersection(Ray ray, float min, float max) {
-	return true;
+bool BoundingBoxIntersection(Ray r, glm::vec3 min, glm::vec3 max) {
+  float tmin = (min.x - r.origin.x) / r.direction.x; 
+  float tmax = (max.x - r.origin.x) / r.direction.x; 
+
+  if (tmin > tmax) swap(tmin, tmax); 
+
+  float tymin = (min.y - r.origin.y) / r.direction.y; 
+  float tymax = (max.y - r.origin.y) / r.direction.y; 
+
+  if (tymin > tymax) swap(tymin, tymax); 
+
+  if ((tmin > tymax) || (tymin > tmax)) 
+      return false; 
+
+  if (tymin > tmin) tmin = tymin; 
+  if (tymax < tmax) tmax = tymax; 
+
+  float tzmin = (min.z - r.origin.z) / r.direction.z; 
+  float tzmax = (max.z - r.origin.z) / r.direction.z; 
+
+  if (tzmin > tzmax) swap(tzmin, tzmax); 
+
+  if ((tmin > tzmax) || (tzmin > tmax)) 
+      return false; 
+
+  if (tzmin > tmin) tmin = tzmin; 
+  if (tzmax < tmax) tmax = tzmax; 
+
+  return true; 
 }
 
-/*std::unordered_set<int> AddBoundingBox(Ray ray) {
-	
-}*/
+void AddBoundingBox(Ray ray, unordered_set<int> &boxes) {
+  glm::vec3 min;
+  glm::vec3 max;
+
+  min = glm::vec3(-450.f, 0.0f, -800.f);
+  max = glm::vec3(0.0f, 300.0f, 0.0f);
+  if (BoundingBoxIntersection(ray, min, max)) 
+    boxes.insert(1);
+  
+  min = glm::vec3(0.0f, 0.0f, -800.f);
+  max = glm::vec3(450.0f, 300.0f, 0.0f);
+  if (BoundingBoxIntersection(ray, min, max)) 
+    boxes.insert(2);
+
+  min = glm::vec3(-450.f, -300.0f, -800.f);
+  max = glm::vec3(0.0f, 0.0f, 0.0f);
+  if (BoundingBoxIntersection(ray, min, max)) 
+    boxes.insert(3);
+
+  min = glm::vec3(0.0f, -300.0f, -800.f);
+  max = glm::vec3(450.0f, 0.0f, 0.0f);
+  if (BoundingBoxIntersection(ray, min, max)) 
+    boxes.insert(3);
+
+  min = glm::vec3(-450.f, 0.0f, 0.f);
+  max = glm::vec3(0.0f, 300.0f, 800.0f);
+  if (BoundingBoxIntersection(ray, min, max)) 
+    boxes.insert(5);
+
+  min = glm::vec3(0.0f, 0.0f, 0.f);
+  max = glm::vec3(450.0f, 300.0f, 800.0f);
+  if (BoundingBoxIntersection(ray, min, max)) 
+    boxes.insert(6);
+
+  min = glm::vec3(-450.f, -300.0f, 0.f);
+  max = glm::vec3(0.0f, 0.0f, 800.0f);
+  if (BoundingBoxIntersection(ray, min, max)) 
+    boxes.insert(7);
+
+  min = glm::vec3(0.0f, -300.0f, 0.f);
+  max = glm::vec3(450.0f, 0.0f, 800.0f);
+  if (BoundingBoxIntersection(ray, min, max)) 
+    boxes.insert(8);
+
+}
 
 // Function to trace the ray and determine if it intersects any spheres or
 // trigs
@@ -330,15 +400,27 @@ P FirstIntersection(Ray ray, int mode) {
       result.refractive_idx = -1;
     }
   }*/
-	std::unordered_set<int> bounding_boxes;
+	unordered_set<int> bounding_boxes;
 
-	
+	AddBoundingBox(ray, bounding_boxes);
 
 
 
   // Check for triangle intersections
   for (const auto &quad : quads) {
-		if (
+		std::vector<int> boxes = std::get<6>(quad);
+    bool valid = false;
+
+    for (int i : boxes) {
+      if (bounding_boxes.count(i)) {
+        valid = true;
+        break;
+      }
+    }
+
+    if (!valid)
+      continue;
+
     std::vector<Vec3> vertices = std::get<0>(quad);
     std::vector<Vec3> vns = std::get<5>(quad);
 

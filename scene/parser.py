@@ -24,6 +24,34 @@ import re
 
 norm_arr = []
 
+def bounding_box(vertices):
+    bounding_boxes = []
+
+    for v in vertices:
+        if (v[0] <= 0):
+            if (v[1] <= 0):
+                if (v[2] <= 0):
+                    bounding_boxes.append(3)
+                else:
+                    bounding_boxes.append(7)
+            else:
+                if (v[2] <= 0):
+                    bounding_boxes.append(1)
+                else:
+                    bounding_boxes.append(5)
+        else:
+            if (v[1] <= 0):
+                if (v[2] <= 0):
+                    bounding_boxes.append(4)
+                else:
+                    bounding_boxes.append(8)
+            else:
+                if (v[2] <= 0):
+                    bounding_boxes.append(2)
+                else:
+                    bounding_boxes.append(6)
+    return bounding_boxes
+
 def add_quad(array, vertices, normals, diff, spec, shininess, refractive):
     quad = {
         "vertices": vertices,
@@ -32,6 +60,7 @@ def add_quad(array, vertices, normals, diff, spec, shininess, refractive):
         "SPEC": spec,
         "SHININESS": shininess,
         "REFRACTIVE": refractive,
+        "BOUNDING_BOX": bounding_box(vertices)
     }
     array["quads"].append(quad)
 
