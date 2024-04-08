@@ -152,7 +152,7 @@ int sdl_gui(int) {
   bool render = false;
   ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.00f, 0.00f);
 
-  bounding_boxes_enabled = true;
+  bounding_boxes_enabled = false;
 
   // Main loop
   bool done = false;
@@ -195,8 +195,8 @@ int sdl_gui(int) {
     {
       static int counter = 0;
 
-      static float f = 0.03f;
-      static int l = 4;
+      static float f = 0.0f;
+      static int l = 1;
       static int resx = THREADS*2;
       static int resy = THREADS*2;
       static int depth = 4;
@@ -226,7 +226,7 @@ int sdl_gui(int) {
       ImGui::SliderInt("max depth", &depth, 1, 32);
       ImGui::SliderFloat("antialiasing", &alias, 1.0f, 4.0f);
 
-      bool smoothing;
+      static bool smoothing = 0;
       if (ImGui::Checkbox("Shade smooth", &smoothing)) {
         smooth = smoothing;
       }

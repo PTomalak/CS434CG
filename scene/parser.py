@@ -3,7 +3,7 @@ import re
 
 """
 
-       +Y
+       -Y
        ^      ^ +Z
        |     /
        |    /
@@ -148,7 +148,7 @@ def save_object_lines():
                     current_object["usemtl"].append(mat_name)
                 elif line.startswith("vn "):
                     normal_values = [float(value) for value in line[2:].split()]
-                    norm_arr.append(normal_values)
+                    norm_arr.append([normal_values[0] * -1.0, normal_values[1], normal_values[2]])
 
         # append last
         if current_object is not None:
@@ -221,7 +221,8 @@ result = {
     "MAXDEPTH": 4,
     "RESOLUTION": [200, 200],
     "SHADE": 0,
-    "APERATURE": 1.0,
+    "SENSOR_SPACING": 0.03,
+    "SENSORS": 4,
     "THREADS": 60,
     "lights": [{"POS": [0, 0, -900], "DIFF": [0.5, 0.5, 0.5], "SPEC": [0.3, 0.3, 0.3]}],
     "spheres": [],
@@ -229,7 +230,10 @@ result = {
 }
 
 generate_bounding_boxes()
-print(bounding_boxes)
+
+with open("./scene/settings.json", "r") as settings_file:
+    settings = json.load(settings_file)
+result.update(settings)
 
 objects = save_object_lines()
 materials = get_materials()

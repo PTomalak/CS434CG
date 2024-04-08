@@ -5,6 +5,10 @@
 #include <vector>
 
 void save_bmp(std::string filename, int antialias) {
+  if (pixels.size() < 1) {
+    printf("no image to save, exiting...\n");
+    return;
+  }
   printf("Saving with antialiasing factor: %d\n", antialias);
 
   // To hold averages
