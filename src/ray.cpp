@@ -478,6 +478,9 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
     // result_color.x = glm::clamp(result_color.x, 0.0f, 1.0f);
     // result_color.y = glm::clamp(result_color.y, 0.0f, 1.0f);
     // result_color.z = glm::clamp(result_color.z, 0.0f, 1.0f);
+    result_color.x = std::max(result_color.x, 0.0f);
+    result_color.y = std::max(result_color.y, 0.0f);
+    result_color.z = std::max(result_color.z, 0.0f);
     return result_color;
   }
 
