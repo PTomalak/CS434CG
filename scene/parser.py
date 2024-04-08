@@ -25,10 +25,10 @@ import re
 norm_arr = []
 
 # Adjust below depending on the size of your blender program
-screen_min = (-500.0, -400.0, -800.0)
-screen_max = (500.0, 400.0, 1500.0)
+screen_min = (-500.0, -400.0, -1500.0)
+screen_max = (500.0, 400.0, 4500.0)
 
-base = 3 # the number of boxes will be this number^3
+base = 5 # the number of boxes will be this number^3
 bounding_boxes = []
 
 def generate_bounding_boxes():
