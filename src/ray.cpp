@@ -57,7 +57,6 @@ const float init_refractive_idx = 1.0f;
 // Camera is so far to recreate a similar setup as on example pictures
 extern glm::vec3 camera_pos;
 
-
 float reflection_loss = 1.0f;
 
 // Snell's Law, returns refracted vector
@@ -98,7 +97,7 @@ void GrammSchmidt(glm::vec3 &l, glm::vec3 &v, glm::vec3 &u) {
 }
 
 std::vector<Ray> CalculateRays(int x, int y) {
-  //printf("x: %d, y: %d\n",x, y);
+  // printf("x: %d, y: %d\n",x, y);
   std::vector<Ray> vec;
 
   glm::vec3 lookAt(0.0f, 0.0f, 0.0f); // Look at point
@@ -109,23 +108,24 @@ std::vector<Ray> CalculateRays(int x, int y) {
 
   for (int i = 0; i < sensor_cell_locs.size(); i++) {
     glm::vec3 cell_loc = sensor_cell_locs.at(i);
-  
-  // Calculate l, v, u vectors
-  glm::vec3 l = lookAt - camera_pos;
-  glm::vec3 v = up;
-  glm::vec3 u;
-  GrammSchmidt(l, v, u);
 
-  // Calculate ray direction
-  float px =
-      (2.0f * (x + 0.5f) / float(width) - 1.0f) * aspectRatio * focalLength;
-  float py = (1.0f - 2.0f * (y + 0.5f) / float(height)) * focalLength;
-  glm::vec3 p = camera_pos + l + px * u + py * v;
-  //printf("p: %f %f %f\n", p.x, p.y, p.z);
-  glm::vec3 direction = glm::normalize(p - cell_loc);
+    // Calculate l, v, u vectors
+    glm::vec3 l = lookAt - camera_pos;
+    glm::vec3 v = up;
+    glm::vec3 u;
+    GrammSchmidt(l, v, u);
 
-  //printf("cell loc: %f %f %f, direction: %f %f %f\n", cell_loc.x, cell_loc.y, cell_loc.z, direction.x, direction.y, direction.z);
-  vec.push_back(Ray{cell_loc, direction});
+    // Calculate ray direction
+    float px =
+        (2.0f * (x + 0.5f) / float(width) - 1.0f) * aspectRatio * focalLength;
+    float py = (1.0f - 2.0f * (y + 0.5f) / float(height)) * focalLength;
+    glm::vec3 p = camera_pos + l + px * u + py * v;
+    // printf("p: %f %f %f\n", p.x, p.y, p.z);
+    glm::vec3 direction = glm::normalize(p - cell_loc);
+
+    // printf("cell loc: %f %f %f, direction: %f %f %f\n", cell_loc.x,
+    // cell_loc.y, cell_loc.z, direction.x, direction.y, direction.z);
+    vec.push_back(Ray{cell_loc, direction});
   }
   return vec;
 }
@@ -239,30 +239,37 @@ float ray_intersects_triangle(glm::vec3 ray_origin, glm::vec3 ray_vector,
   }
 }
 
-glm::vec3 weightedAverageNormal(const glm::vec3& intersectionPoint,
-                                const glm::vec3& vertex1,
-                                const glm::vec3& vertex2,
-                                const glm::vec3& vertex3,
-                                const glm::vec3& normal1,
-                                const glm::vec3& normal2,
-                                const glm::vec3& normal3) {
-    float d1 = glm::length(vertex1 - intersectionPoint);
-    float d2 = glm::length(vertex2 - intersectionPoint);
-    float d3 = glm::length(vertex3 - intersectionPoint);
-    
-    float totalDistance = d1 + d2 + d3;
+glm::vec3 weightedAverageNormal(const glm::vec3 &intersectionPoint,
+                      const glm::vec3 &vertex1, const glm::vec3 &vertex2,
+                      const glm::vec3 &vertex3, const glm::vec3 &normal1,
+                      const glm::vec3 &normal2, const glm::vec3 &normal3) {
 
-    // Calculate weights based on distance
-    float w1 = d1 / totalDistance;
-    float w2 = d2 / totalDistance;
-    float w3 = d3 / totalDistance;
+  glm::vec3 edge1 = vertex2 - vertex1;
+  glm::vec3 edge2 = vertex3 - vertex1;
+  glm::vec3 edge3 = vertex3 - vertex2;
 
-    // Weighted sum of normals
-    glm::vec3 weightedNormal = w1 * normal1 + w2 * normal2 + w3 * normal3;
-    
-    // Normalize
-    return glm::normalize(weightedNormal);
+  glm::vec3 triangleNormal = glm::normalize(glm::cross(edge1, edge2));
+
+  glm::vec3 toVertex1 = vertex1 - intersectionPoint;
+  glm::vec3 toVertex2 = vertex2 - intersectionPoint;
+  glm::vec3 toVertex3 = vertex3 - intersectionPoint;
+
+  float area1 = glm::length(glm::cross(toVertex2, toVertex3));
+  float area2 = glm::length(glm::cross(toVertex3, toVertex1));
+  float area3 = glm::length(glm::cross(toVertex1, toVertex2));
+
+  float totalArea = area1 + area2 + area3;
+
+  float w1 = area1 / totalArea;
+  float w2 = area2 / totalArea;
+  float w3 = area3 / totalArea;
+
+  glm::vec3 weightedNormal = w1 * normal1 + w2 * normal2 + w3 * normal3;
+
+  // Normalize
+  return glm::normalize(weightedNormal);
 }
+
 
 // Function to trace the ray and determine if it intersects any spheres or
 // trigs
@@ -303,8 +310,6 @@ P FirstIntersection(Ray ray, int mode) {
     }
   }
 
-
-
   // Check for triangle intersections
   for (const auto &quad : quads) {
     std::vector<Vec3> vertices = std::get<0>(quad);
@@ -315,7 +320,6 @@ P FirstIntersection(Ray ray, int mode) {
     std::vector<Vec3> vertices2 = {vertices[1], vertices[2], vertices[3]};
     std::vector<Vec3> vns1 = {vns[0], vns[1], vns[2]};
     std::vector<Vec3> vns2 = {vns[1], vns[2], vns[3]};
-
 
     distance = ray_intersects_triangle(ray.origin, ray.direction, vertices1,
                                        intersectionPoint);
@@ -335,10 +339,14 @@ P FirstIntersection(Ray ray, int mode) {
         glm::vec3 normal1 = glm::vec3(vns1[0].x, vns1[0].y, vns1[0].z);
         glm::vec3 normal2 = glm::vec3(vns1[1].x, vns1[1].y, vns1[1].z);
         glm::vec3 normal3 = glm::vec3(vns1[2].x, vns1[2].y, vns1[2].z);
-        glm::vec3 vert1 = glm::vec3(vertices1[0].x, vertices1[0].y, vertices1[0].z);
-        glm::vec3 vert2 = glm::vec3(vertices1[1].x, vertices1[1].y, vertices1[1].z);
-        glm::vec3 vert3 = glm::vec3(vertices1[2].x, vertices1[2].y, vertices1[2].z);
-        normal = weightedAverageNormal(intersectionPoint, vert1, vert2, vert3, normal1, normal2, normal3);
+        glm::vec3 vert1 =
+            glm::vec3(vertices1[0].x, vertices1[0].y, vertices1[0].z);
+        glm::vec3 vert2 =
+            glm::vec3(vertices1[1].x, vertices1[1].y, vertices1[1].z);
+        glm::vec3 vert3 =
+            glm::vec3(vertices1[2].x, vertices1[2].y, vertices1[2].z);
+        normal = weightedAverageNormal(intersectionPoint, vert1, vert2, vert3,
+                                       normal1, normal2, normal3);
       } else {
         normal = glm::cross(glm::vec3(vertices1[1].x - vertices1[0].x,
                                       vertices1[1].y - vertices1[0].y,
@@ -372,10 +380,14 @@ P FirstIntersection(Ray ray, int mode) {
         glm::vec3 normal1 = glm::vec3(vns2[0].x, vns2[0].y, vns2[0].z);
         glm::vec3 normal2 = glm::vec3(vns2[1].x, vns2[1].y, vns2[1].z);
         glm::vec3 normal3 = glm::vec3(vns2[2].x, vns2[2].y, vns2[2].z);
-        glm::vec3 vert1 = glm::vec3(vertices2[0].x, vertices2[0].y, vertices2[0].z);
-        glm::vec3 vert2 = glm::vec3(vertices2[1].x, vertices2[1].y, vertices2[1].z);
-        glm::vec3 vert3 = glm::vec3(vertices2[2].x, vertices2[2].y, vertices2[2].z);
-        normal = weightedAverageNormal(intersectionPoint, vert1, vert2, vert3, normal1, normal2, normal3);
+        glm::vec3 vert1 =
+            glm::vec3(vertices2[0].x, vertices2[0].y, vertices2[0].z);
+        glm::vec3 vert2 =
+            glm::vec3(vertices2[1].x, vertices2[1].y, vertices2[1].z);
+        glm::vec3 vert3 =
+            glm::vec3(vertices2[2].x, vertices2[2].y, vertices2[2].z);
+        normal = weightedAverageNormal(intersectionPoint, vert1, vert2, vert3,
+                                       normal1, normal2, normal3);
       } else {
         normal = glm::cross(glm::vec3(vertices2[1].x - vertices2[0].x,
                                       vertices2[1].y - vertices2[0].y,
@@ -496,18 +508,18 @@ glm::vec3 Trace(Ray ray, int depth, float refractive_idx) {
 }
 
 void raytrace_blur(int x, int y, int thread_num) {
-  //sensor_cell_locs = GenerateSensorCellArray();
-  //printf("TEST %d\n", thread_num);
+  // sensor_cell_locs = GenerateSensorCellArray();
+  // printf("TEST %d\n", thread_num);
   std::vector<Ray> rays = CalculateRays(x, y);
   glm::vec3 totalColor = glm::vec3(0.0f, 0.0f, 0.0f);
-  //printf("LEN: %d\n", sensor_cell_locs.size());
+  // printf("LEN: %d\n", sensor_cell_locs.size());
   for (int i = 0; i < sensor_cell_locs.size(); i++) {
     glm::vec3 tracedColor = Trace(rays.at(i), maxdepth, init_refractive_idx);
     totalColor += tracedColor;
   }
 
   glm::vec3 color = totalColor * (1.0f / sensor_cell_locs.size());
-  
+
   color *= 255;
   // clamp colors
   color.x = std::min(color.x, 255.0f);
