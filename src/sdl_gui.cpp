@@ -223,7 +223,7 @@ int sdl_gui(int) {
       ImGui::SliderInt("max depth", &depth, 1, 32);
       ImGui::SliderFloat("antialiasing", &alias, 1.0f, 4.0f);
 
-      bool smoothing;
+      static bool smoothing = 0;
       if (ImGui::Checkbox("Shade smooth", &smoothing)) {
         smooth = smoothing;
       }

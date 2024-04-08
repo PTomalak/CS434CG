@@ -70,9 +70,7 @@ std::vector<glm::vec3> GenerateSensorCellArray() {
   return sensor_cell_locs;
 }
 
-void render_scene(std::string input) {
-  pixels.clear();
-
+void parse_blender(std::string input) {
   // First we must reread from blender
   int ret1 = fork();
   if (ret1 == -1)
@@ -119,6 +117,12 @@ void render_scene(std::string input) {
     printf("Problem reading JSON file\n");
     return;
   }
+}
+
+void render_scene(std::string input) {
+  pixels.clear();
+
+  parse_blender(input);
 
   width = resolutionX * antialias;
   height = resolutionY * antialias;
@@ -187,6 +191,8 @@ int main(int argc, char *argv[]) {
   int numThreads = sysconf(_SC_NPROCESSORS_ONLN);
   printf("Using %d of system threads.\n", numThreads);
   THREADS = numThreads * 5;
+
+  //parse_blender(input);
 
   // This sucks but is a solution to imgui not being thread safe
   while (main_loop) {
