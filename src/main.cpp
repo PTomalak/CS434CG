@@ -39,6 +39,7 @@ int smooth = 0;
 float sensor_spacing = 0.00f;
 int sensors = 1;
 int headless = 0;
+bool bounding_boxes_enabled = false;
 
 
 glm::vec3 camera_pos(0.0f, 0.0f, -800.0f);
@@ -121,6 +122,8 @@ void render_scene(std::string input, int argc) {
 
   // First thread for SDL handling
   threads[0] = std::thread(handleSDL, argc);
+
+  GenerateBoundingBoxes();
 
   // setup threads for setting pixel colors
   for (int i = 1; i < THREADS; ++i) {

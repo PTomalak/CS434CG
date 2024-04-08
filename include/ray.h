@@ -22,5 +22,6 @@ extern std::vector<std::vector<std::array<int, 3>>> pixels;
 
 void raytrace(int x, int y, int thread_num);
 void raytrace_blur(int x, int y, int thread_num);
+void GenerateBoundingBoxes();
 
 #endif // RAY_H

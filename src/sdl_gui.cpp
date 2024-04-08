@@ -37,6 +37,7 @@ extern int resolutionY;
 extern int THREADS;
 extern int maxdepth;
 extern float antialias;
+extern bool bounding_boxes_enabled;
 
 
 namespace fs = std::filesystem;
@@ -151,6 +152,8 @@ int sdl_gui(int) {
   bool render = false;
   ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.00f, 0.00f);
 
+  bounding_boxes_enabled = true;
+
   // Main loop
   bool done = false;
   while (!done) {
@@ -226,6 +229,11 @@ int sdl_gui(int) {
       bool smoothing;
       if (ImGui::Checkbox("Shade smooth", &smoothing)) {
         smooth = smoothing;
+      }
+
+      bool boxes;
+      if (ImGui::Checkbox("Bounding Boxes", &boxes)) {
+        bounding_boxes_enabled = boxes;
       }
 
       if (ImGui::Button("Render")) {

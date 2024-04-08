@@ -24,33 +24,58 @@ import re
 
 norm_arr = []
 
-def bounding_box(vertices):
-    bounding_boxes = []
+# Adjust below depending on the size of your blender program
+screen_min = (-500.0, -400.0, -800.0)
+screen_max = (500.0, 400.0, 1500.0)
 
-    for v in vertices:
-        if (v[0] <= 0):
-            if (v[1] <= 0):
-                if (v[2] <= 0):
-                    bounding_boxes.append(3)
-                else:
-                    bounding_boxes.append(7)
-            else:
-                if (v[2] <= 0):
-                    bounding_boxes.append(1)
-                else:
-                    bounding_boxes.append(5)
-        else:
-            if (v[1] <= 0):
-                if (v[2] <= 0):
-                    bounding_boxes.append(4)
-                else:
-                    bounding_boxes.append(8)
-            else:
-                if (v[2] <= 0):
-                    bounding_boxes.append(2)
-                else:
-                    bounding_boxes.append(6)
+base = 3 # the number of boxes will be this number^3
+bounding_boxes = []
+
+def generate_bounding_boxes():
+    x_min = screen_min[0]
+    y_min = screen_min[1]
+    z_min = screen_min[2]
+
+    x_max = screen_max[0]
+    y_max = screen_max[1]
+    z_max = screen_max[2]
+
+    scene_width = x_max - x_min
+    scene_height = y_max - y_min
+    scene_depth = z_max - z_min
+    
+    box_width = scene_width / base
+    box_height = scene_height / base
+    box_depth = scene_depth / base
+
+    label = 1
+    for i in range(base):
+        x_box_min = x_min + i * box_width
+        x_box_max = x_min + (i + 1) * box_width
+
+        for j in range(base):
+            y_box_min = y_min + j * box_height
+            y_box_max = y_min + (j + 1) * box_height
+
+            for k in range(base):
+                z_box_min = z_min + k * box_depth
+                z_box_max = z_min + (k + 1) * box_depth
+
+                bounding_boxes.append((label, x_box_min, x_box_max, y_box_min, y_box_max, z_box_min, z_box_max))
+                label = label + 1
+
     return bounding_boxes
+
+def add_bounding_boxes(vertices):
+    boxes = []
+    for b in bounding_boxes:
+        for v in vertices:
+            if (v[0] >= b[1] and v[0] <= b[2] and
+                v[1] >= b[3] and v[1] <= b[4] and
+                v[2] >= b[5] and v[2] <= b[6]):
+                boxes.append(b[0])
+                break
+    return boxes      
 
 def add_quad(array, vertices, normals, diff, spec, shininess, refractive):
     quad = {
@@ -60,7 +85,7 @@ def add_quad(array, vertices, normals, diff, spec, shininess, refractive):
         "SPEC": spec,
         "SHININESS": shininess,
         "REFRACTIVE": refractive,
-        "BOUNDING_BOX": bounding_box(vertices)
+        "BOUNDING_BOX": add_bounding_boxes(vertices)
     }
     array["quads"].append(quad)
 
@@ -192,7 +217,7 @@ def print_materials(materials):
 
 result = {
     "ANTIALIAS": 1.0,
-    "BACKGROUND": [0.0, 0.0, 0.0],
+    "BACKGROUND": [0.1, 0.1, 0.1],
     "MAXDEPTH": 4,
     "RESOLUTION": [200, 200],
     "SHADE": 0,
@@ -203,6 +228,8 @@ result = {
     "quads": [],
 }
 
+generate_bounding_boxes()
+print(bounding_boxes)
 
 objects = save_object_lines()
 materials = get_materials()

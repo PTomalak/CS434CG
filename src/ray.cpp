@@ -63,6 +63,13 @@ extern glm::vec3 camera_pos;
 
 float reflection_loss = 1.0f;
 
+// Adjust below depending on the size of your blender scene
+glm::vec3 screen_min = glm::vec3(-500.f, -400.f, -800.f);
+glm::vec3 screen_max = glm::vec3(500.f, 400.f, 1500.f);
+vector<tuple<int, glm::vec3, glm::vec3>> bounding_boxes;
+int base = 3; // the number of boxes will be this number^3
+extern bool bounding_boxes_enabled;
+
 // Snell's Law, returns refracted vector
 glm::vec3 Refraction(float n1, float n2, P p, Ray r) {
   // The following formula is taken from "Reflections and Refractions in Ray
@@ -271,8 +278,11 @@ glm::vec3 weightedAverageNormal(const glm::vec3& intersectionPoint,
     return glm::normalize(weightedNormal);
 }
 
+
+// The following function is taken from
+// https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection.html
 bool BoundingBoxIntersection(Ray r, glm::vec3 min, glm::vec3 max) {
-  float tmin = (min.x - r.origin.x) / r.direction.x; 
+  float tmin = (min.x - r.origin.x) / r.direction.x;
   float tmax = (max.x - r.origin.x) / r.direction.x; 
 
   if (tmin > tmax) swap(tmin, tmax); 
@@ -303,49 +313,54 @@ bool BoundingBoxIntersection(Ray r, glm::vec3 min, glm::vec3 max) {
 }
 
 void AddBoundingBox(Ray ray, unordered_set<int> &boxes) {
-  glm::vec3 min;
-  glm::vec3 max;
+  for (const auto &box : bounding_boxes) {
+    if (BoundingBoxIntersection(ray, std::get<1>(box), std::get<2>(box))) {
+      boxes.insert(std::get<0>(box));
+    }
+  }
+}
 
-  min = glm::vec3(-450.f, 0.0f, -800.f);
-  max = glm::vec3(0.0f, 300.0f, 0.0f);
-  if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(1);
+void GenerateBoundingBoxes() {
+  bounding_boxes.clear();
+  float x_min = screen_min.x;
+  float y_min = screen_min.y;
+  float z_min = screen_min.z;
+
+  float x_max = screen_max.x;
+  float y_max = screen_max.y;
+  float z_max = screen_max.z;
   
-  min = glm::vec3(0.0f, 0.0f, -800.f);
-  max = glm::vec3(450.0f, 300.0f, 0.0f);
-  if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(2);
+  float scene_width = x_max - x_min;
+  float scene_height = y_max - y_min;
+  float scene_depth = z_max - z_min;
+  
+  float box_width = scene_width / base;
+  float box_height = scene_height / base;
+  float box_depth = scene_depth / base;
 
-  min = glm::vec3(-450.f, -300.0f, -800.f);
-  max = glm::vec3(0.0f, 0.0f, 0.0f);
-  if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(3);
+  int label = 1;
 
-  min = glm::vec3(0.0f, -300.0f, -800.f);
-  max = glm::vec3(450.0f, 0.0f, 0.0f);
-  if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(4);
+  for(int i = 0; i < base; i++) {
+    float x_box_min = x_min + i * box_width;
+    float x_box_max = x_min + (i + 1) * box_width;
 
-  min = glm::vec3(-450.f, 0.0f, 0.f);
-  max = glm::vec3(0.0f, 300.0f, 800.0f);
-  if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(5);
+    for (int j = 0; j < base; j++) {
+      float y_box_min = y_min + j * box_height;
+      float y_box_max = y_min + (j + 1) * box_height;
 
-  min = glm::vec3(0.0f, 0.0f, 0.f);
-  max = glm::vec3(450.0f, 300.0f, 800.0f);
-  if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(6);
+      for (int k = 0; k < base; k++) {
+        float z_box_min = z_min + k * box_depth;
+        float z_box_max = z_min + (k + 1) * box_depth;
 
-  min = glm::vec3(-450.f, -300.0f, 0.f);
-  max = glm::vec3(0.0f, 0.0f, 800.0f);
-  if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(7);
+        glm::vec3 min = glm::vec3(x_box_min, y_box_min, z_box_min);
+        glm::vec3 max = glm::vec3(x_box_max, y_box_max, z_box_max);
+        auto t = make_tuple(label, min, max);
+        bounding_boxes.push_back(t);
 
-  min = glm::vec3(0.0f, -300.0f, 0.f);
-  max = glm::vec3(450.0f, 0.0f, 800.0f);
-  if (BoundingBoxIntersection(ray, min, max)) 
-    boxes.insert(8);
-
+        label++;
+      }
+    }
+  }
 }
 
 // Function to trace the ray and determine if it intersects any spheres or
@@ -386,26 +401,27 @@ P FirstIntersection(Ray ray, int mode) {
       result.refractive_idx = -1;
     }
   }*/
-	unordered_set<int> bounding_boxes;
+	unordered_set<int> bounding_boxes_hit;
 
-	AddBoundingBox(ray, bounding_boxes);
-
-
+  if (bounding_boxes_enabled)
+	  AddBoundingBox(ray, bounding_boxes_hit);
 
   // Check for triangle intersections
   for (const auto &quad : quads) {
 		std::vector<int> boxes = std::get<6>(quad);
     bool valid = false;
 
-    for (int i : boxes) {
-      if (bounding_boxes.count(i)) {
-        valid = true;
-        break;
+    if (bounding_boxes_enabled) {
+      for (int i : boxes) {
+        if (bounding_boxes_hit.count(i)) {
+          valid = true;
+          break;
+        }
       }
-    }
 
-    if (!valid)
-      continue;
+      if (!valid)
+        continue;
+    }
 
     std::vector<Vec3> vertices = std::get<0>(quad);
     std::vector<Vec3> vns = std::get<5>(quad);
@@ -617,6 +633,7 @@ void raytrace_blur(int x, int y, int thread_num) {
 }
 
 void raytrace(int x, int y, int thread_num) {
+  cout << bounding_boxes_enabled << endl;
   Ray ray = CalculateRay(x, y);
   glm::vec3 color = Trace(ray, maxdepth, init_refractive_idx);
   color *= 255;
