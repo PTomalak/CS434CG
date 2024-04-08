@@ -3,7 +3,7 @@ import re
 
 """
 
-       +Y
+       -Y
        ^      ^ +Z
        |     /
        |    /
@@ -94,7 +94,7 @@ def save_object_lines():
                     current_object["usemtl"].append(mat_name)
                 elif line.startswith("vn "):
                     normal_values = [float(value) for value in line[2:].split()]
-                    norm_arr.append(normal_values)
+                    norm_arr.append([normal_values[0] * -1.0, normal_values[1], normal_values[2]])
 
         # append last
         if current_object is not None:

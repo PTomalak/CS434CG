@@ -16,6 +16,7 @@ for obj in scene.objects:
             "DIFF": list(light_data.color * light_data.diffuse_factor),
             "SPEC": list(light_data.color * light_data.specular_factor),
         }
+        light_info["POS"][1] = -light_info["POS"][1]
         lights_info.append(light_info)
 
 result = {

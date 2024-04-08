@@ -257,10 +257,6 @@ glm::vec3 weightedAverageNormal(const glm::vec3& intersectionPoint,
     float w2 = d2 / totalDistance;
     float w3 = d3 / totalDistance;
 
-    w1 = 1/w1;
-    w2 = 1/w2;
-    w3 = 1/w3;
-
     // Weighted sum of normals
     glm::vec3 weightedNormal = w1 * normal1 + w2 * normal2 + w3 * normal3;
     
@@ -319,6 +315,7 @@ P FirstIntersection(Ray ray, int mode) {
     std::vector<Vec3> vertices2 = {vertices[1], vertices[2], vertices[3]};
     std::vector<Vec3> vns1 = {vns[0], vns[1], vns[2]};
     std::vector<Vec3> vns2 = {vns[1], vns[2], vns[3]};
+
 
     distance = ray_intersects_triangle(ray.origin, ray.direction, vertices1,
                                        intersectionPoint);
