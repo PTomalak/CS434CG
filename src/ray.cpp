@@ -61,8 +61,8 @@ extern glm::vec3 camera_pos;
 float reflection_loss = 1.0f;
 
 // Adjust below depending on the size of your blender scene
-glm::vec3 screen_min = glm::vec3(-500.f, -400.f, -800.f);
-glm::vec3 screen_max = glm::vec3(500.f, 400.f, 1500.f);
+glm::vec3 screen_min = glm::vec3(-500.f, -400.f, -1500.f);
+glm::vec3 screen_max = glm::vec3(500.f, 400.f, 4500.f);
 vector<tuple<int, glm::vec3, glm::vec3>> bounding_boxes;
 int base = 3; // the number of boxes will be this number^3
 extern bool bounding_boxes_enabled;

@@ -249,8 +249,8 @@ int sdl_gui(int) {
         break;
         // break;
       }
-      ImGui::SameLine();
-      ImGui::Text("counter = %d", counter);
+      //ImGui::SameLine();
+      //ImGui::Text("counter = %d", counter);
 
       if (ImGui::Button("Exit")) {
         main_loop = false;
